@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Physical Media Catalog</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html5-qrcode for live webcam/camera barcode scanning -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* iOS App aesthetic & mobile tweaks */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-100">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between z-10 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="bg-gradient-to-tr from-amber-500 to-red-600 p-2 rounded-xl text-white shadow-lg">
+        <i class="fa-solid font-bold text-lg fa-compact-disc animate-spin-slow"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg tracking-wide text-white leading-none">FilmVault</h1>
+        <p class="text-xs text-slate-400 mt-0.5" id="stats-summary">0 Physical Editions</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="openSettingsModal()" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-sm flex items-center shadow-md">
+        <i class="fa-solid fa-plus mr-1.5"></i> Add
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-2 flex justify-around text-xs font-semibold text-slate-400 shrink-0">
+    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-2.5 px-3 border-b-2 border-amber-500 text-amber-500 flex items-center space-x-1.5 transition-all">
+      <i class="fa-solid fa-film text-sm"></i>
+      <span>Collection</span>
+    </button>
+    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 transition-all">
+      <i class="fa-solid fa-barcode text-sm"></i>
+      <span>Scanner</span>
+    </button>
+    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 transition-all relative">
+      <i class="fa-solid fa-arrow-up-right-dots text-sm"></i>
+      <span>4K Upgrades</span>
+      <span id="upgrade-badge" class="hidden absolute top-1 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+    </button>
+    <button onclick="switchTab('recs')" id="tab-btn-recs" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 transition-all">
+      <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+      <span>For You</span>
+    </button>
+  </nav>
+
+  <!-- Main Scrollable Area -->
+  <main class="flex-1 overflow-y-auto hide-scrollbar p-4 relative" id="main-container">
+    
+    <!-- CATALOG TAB -->
+    <section id="tab-catalog" class="space-y-4">
+      <!-- Search & Filters -->
+      <div class="space-y-2">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, studios..." 
+                 class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-9 pr-8 py-2 text-sm focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-400">
+          <button onclick="clearSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white hidden" id="clear-search-btn">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-1">
+          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3 py-1 rounded-full text-xs font-bold shrink-0">
+            All
+          </button>
+          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">
+            4K UHD
+          </button>
+          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">
+            Blu-ray
+          </button>
+          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">
+            DVD
+          </button>
+          <button onclick="toggleSpecialFilter('steelbook')" id="filter-steelbook" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">
+            <i class="fa-solid fa-box-archive mr-1"></i> Steelbooks
+          </button>
+          <button onclick="toggleSpecialFilter('slipcover')" id="filter-slipcover" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">
+            <i class="fa-solid fa-layer-group mr-1"></i> Slipcovers
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid Catalog -->
+      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <!-- Movies populated dynamically -->
+      </div>
+
+      <div id="empty-catalog" class="hidden text-center py-12 space-y-3">
+        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-500 text-2xl">
+          <i class="fa-solid fa-film"></i>
+        </div>
+        <h3 class="text-slate-300 font-semibold text-base">No movies found</h3>
+        <p class="text-xs text-slate-500 max-w-xs mx-auto">Try adjusting your filters or tap "+ Add" to scan your first movie.</p>
+      </div>
+    </section>
+
+    <!-- SCANNER TAB -->
+    <section id="tab-scanner" class="hidden space-y-4">
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 text-center space-y-3">
+        <h2 class="font-bold text-base text-white">UPC Barcode Camera Scanner</h2>
+        <p class="text-xs text-slate-400">Position the barcode of your DVD, Blu-ray, or 4K UHD box inside the scanner frame.</p>
+        
+        <div id="reader" class="overflow-hidden rounded-xl bg-black border border-slate-700 min-h-[220px] flex items-center justify-center relative">
+          <span class="text-slate-500 text-xs p-4">Camera inactive. Tap "Start Camera" below to scan.</span>
+        </div>
+
+        <div class="flex justify-center space-x-3 pt-2">
+          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center">
+            <i class="fa-solid fa-camera mr-1.5"></i> Start Camera
+          </button>
+          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center">
+            <i class="fa-solid fa-stop mr-1.5"></i> Stop Camera
+          </button>
+        </div>
+      </div>
+
+      <!-- Manual Barcode or USB Scanner Input -->
+      <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Handheld / Bluetooth / Manual UPC Input</h3>
+        <div class="flex space-x-2">
+          <input type="text" id="manual-upc-input" placeholder="Type or scan 12-digit UPC code..." 
+                 class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+          <button onclick="handleManualUpcSubmit()" class="bg-slate-700 hover:bg-slate-600 font-semibold px-4 py-2 rounded-xl text-xs text-white">
+            Lookup
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPGRADES TAB -->
+    <section id="tab-upgrades" class="hidden space-y-4">
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+        <h2 class="font-bold text-base text-amber-400 flex items-center">
+          <i class="fa-solid fa-sparkles mr-2"></i> Smart 4K UHD Upgrade Finder
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Movies in your library that you currently own on <strong>DVD</strong> or <strong>Blu-ray</strong> where a remastered 4K UHD release is available.
+        </p>
+      </div>
+
+      <div id="upgrades-list" class="space-y-3">
+        <!-- Upgrade cards populated here -->
+      </div>
+    </section>
+
+    <!-- RECOMMENDATIONS TAB -->
+    <section id="tab-recs" class="hidden space-y-4">
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+        <h2 class="font-bold text-base text-amber-400 flex items-center">
+          <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Tailored Recommendations
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Based on your favorite directors, studios, and most owned genres in your physical collection.
+        </p>
+      </div>
+
+      <div id="recs-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <!-- Rec items dynamically populated -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ADD / EDIT MOVIE MODAL -->
+  <div id="movie-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-5 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h3 id="modal-title" class="font-bold text-base text-white">Add Physical Edition</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 flex-1 hide-scrollbar">
+        <!-- Title & TMDB Search -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Movie Title *</label>
+          <div class="flex space-x-2">
+            <input type="text" id="form-title" placeholder="e.g. Blade Runner 2049" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <button onclick="searchTMDBForTitle()" class="bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs">Search TMDB</button>
+          </div>
+          <div id="tmdb-results" class="hidden mt-2 bg-slate-800 border border-slate-700 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
+        </div>
+
+        <!-- Format & Packaging -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Disc Format *</label>
+            <select id="form-format" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+              <option value="4K UHD">4K UHD</option>
+              <option value="Blu-ray">Blu-ray</option>
+              <option value="DVD">DVD</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Packaging *</label>
+            <select id="form-packaging" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+              <option value="Standard Case">Standard Case</option>
+              <option value="Steelbook">Steelbook</option>
+              <option value="Digibook">Digibook / Box Set</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Metadata fields -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Director</label>
+            <input type="text" id="form-director" placeholder="Denis Villeneuve" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Studio / Label</label>
+            <input type="text" id="form-studio" placeholder="Warner Bros / Sony" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <!-- Tech Specs -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">HDR Type</label>
+            <select id="form-hdr" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+              <option value="None/SDR">None / SDR</option>
+              <option value="HDR10">HDR10</option>
+              <option value="HDR10+">HDR10+</option>
+              <option value="Dolby Vision">Dolby Vision</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Audio Format</label>
+            <input type="text" id="form-audio" placeholder="Dolby Atmos, DTS-HD MA" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="flex items-center space-x-6 pt-1">
+          <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+            <input type="checkbox" id="form-slipcover" class="accent-amber-500 rounded w-4 h-4">
+            <span>Has Slipcover</span>
+          </label>
+          <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+            <input type="checkbox" id="form-has4k" class="accent-amber-500 rounded w-4 h-4">
+            <span>4K Transfer Exists</span>
+          </label>
+        </div>
+
+        <!-- Poster URL & Barcode -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">UPC Barcode</label>
+            <input type="text" id="form-upc" placeholder="883929612345" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Poster Image URL</label>
+            <input type="text" id="form-poster" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <input type="hidden" id="form-id">
+      </div>
+
+      <div class="p-4 border-t border-slate-800 flex space-x-2 justify-end bg-slate-900">
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancel</button>
+        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold">Save Movie</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-white">App Settings</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">TMDB API Key (Free API Integration)</label>
+          <input type="text" id="tmdb-api-key-input" placeholder="Paste TMDB API v3 Key here..." 
+                 class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          <p class="text-[11px] text-slate-500 mt-1">Used to pull live high-resolution movie posters, directors, and studios from The Movie Database.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 space-y-2">
+          <h4 class="font-bold text-slate-300">Data Management</h4>
+          <div class="flex space-x-2">
+            <button onclick="exportData()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-semibold">
+              <i class="fa-solid fa-download mr-1"></i> Export JSON
+            </button>
+            <button onclick="importDataPrompt()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-semibold">
+              <i class="fa-solid fa-upload mr-1"></i> Import JSON
+            </button>
+          </div>
+          <button onclick="loadDemoData()" class="w-full bg-slate-800/80 hover:bg-slate-700/80 text-amber-400 py-2 rounded-xl text-xs font-semibold border border-amber-500/30">
+            <i class="fa-solid fa-database mr-1"></i> Reset / Load Demo Collection
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="saveSettings()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC JavaScript -->
+  <script>
+    // Initial Seed Data
+    const SAMPLE_MOVIES = [
+      {
+        id: "m1",
+        title: "Blade Runner 2049",
+        format: "4K UHD",
+        packaging: "Steelbook",
+        hasSlipcover: false,
+        hdrType: "Dolby Vision",
+        audioFormat: "Dolby Atmos",
+        director: "Denis Villeneuve",
+        studio: "Warner Bros / Sony",
+        genre: "Sci-Fi",
+        upc: "883929618126",
+        has4kUpgrade: false,
+        poster: "https://image.tmdb.org/t/p/w500/gA9L14v2293R31A38419g079088.jpg"
+      },
+      {
+        id: "m2",
+        title: "The Matrix",
+        format: "DVD",
+        packaging: "Standard Case",
+        hasSlipcover: false,
+        hdrType: "None/SDR",
+        audioFormat: "Dolby Digital 5.1",
+        director: "Lana Wachowski, Lilly Wachowski",
+        studio: "Warner Bros",
+        genre: "Sci-Fi",
+        upc: "085391633824",
+        has4kUpgrade: true,
+        poster: "https://image.tmdb.org/t/p/w500/f89U3Y9L0A339239840.jpg"
+      },
+      {
+        id: "m3",
+        title: "Oppenheimer",
+        format: "4K UHD",
+        packaging: "Standard Case",
+        hasSlipcover: true,
+        hdrType: "HDR10",
+        audioFormat: "DTS-HD MA 5.1",
+        director: "Christopher Nolan",
+        studio: "Universal Pictures",
+        genre: "Drama",
+        upc: "191329241280",
+        has4kUpgrade: false,
+        poster: "https://image.tmdb.org/t/p/w500/8Gxv8bSFC324908123.jpg"
+      },
+      {
+        id: "m4",
+        title: "The Dark Knight",
+        format: "Blu-ray",
+        packaging: "Standard Case",
+        hasSlipcover: true,
+        hdrType: "None/SDR",
+        audioFormat: "Dolby TrueHD 5.1",
+        director: "Christopher Nolan",
+        studio: "Warner Bros",
+        genre: "Action",
+        upc: "883929000123",
+        has4kUpgrade: true,
+        poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WM234890.jpg"
+      }
+    ];
+
+    let collection = [];
+    let currentFormatFilter = 'ALL';
+    let specialFilters = { steelbook: false, slipcover: false };
+    let html5QrcodeScanner = null;
+
+    // Load Initial Data
+    function initApp() {
+      const stored = localStorage.getItem('filmvault_collection');
+      if (stored) {
+        try {
+          collection = JSON.parse(stored);
+        } catch(e) {
+          collection = SAMPLE_MOVIES;
+        }
+      } else {
+        collection = SAMPLE_MOVIES;
+        saveCollection();
+      }
+      
+      const apiKey = localStorage.getItem('tmdb_api_key') || '';
+      document.getElementById('tmdb-api-key-input').value = apiKey;
+
+      renderCatalog();
+      updateStats();
+      updateUpgradesTab();
+      updateRecommendationsTab();
+    }
+
+    function saveCollection() {
+      localStorage.setItem('filmvault_collection', JSON.stringify(collection));
+      updateStats();
+      updateUpgradesTab();
+      updateRecommendationsTab();
+    }
+
+    // Switch Tabs
+    function switchTab(tab) {
+      const tabs = ['catalog', 'scanner', 'upgrades', 'recs'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-500');
+        document.getElementById(`tab-btn-${t}`).classList.add('border-transparent');
+      });
+
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-500');
+      document.getElementById(`tab-btn-${tab}`).classList.remove('border-transparent');
+
+      if (tab !== 'scanner' && html5QrcodeScanner) {
+        stopCameraScanner();
+      }
+    }
+
+    // Render Catalog
+    function renderCatalog() {
+      const grid = document.getElementById('catalog-grid');
+      const emptyState = document.getElementById('empty-catalog');
+      const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+
+      grid.innerHTML = '';
+
+      const filtered = collection.filter(movie => {
+        // Format Filter
+        if (currentFormatFilter !== 'ALL' && movie.format !== currentFormatFilter) return false;
+        
+        // Special Filters
+        if (specialFilters.steelbook && movie.packaging !== 'Steelbook') return false;
+        if (specialFilters.slipcover && !movie.hasSlipcover) return false;
+
+        // Search Query
+        if (searchVal) {
+          const titleMatch = movie.title.toLowerCase().includes(searchVal);
+          const dirMatch = (movie.director || '').toLowerCase().includes(searchVal);
+          const studioMatch = (movie.studio || '').toLowerCase().includes(searchVal);
+          const upcMatch = (movie.upc || '').includes(searchVal);
+          return titleMatch || dirMatch || studioMatch || upcMatch;
+        }
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        filtered.forEach(movie => {
+          grid.appendChild(createMovieCard(movie));
+        });
+      }
+    }
+
+    function createMovieCard(movie) {
+      const card = document.createElement('div');
+      card.className = "bg-slate-800 border border-slate-700/80 rounded-xl overflow-hidden flex flex-col group relative shadow-md";
+
+      let formatBadgeBg = "bg-amber-500 text-slate-950";
+      if (movie.format === 'Blu-ray') formatBadgeBg = "bg-blue-600 text-white";
+      if (movie.format === 'DVD') formatBadgeBg = "bg-slate-600 text-white";
+
+      const posterSrc = movie.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster';
+
+      card.innerHTML = `
+        <div class="relative aspect-[2/3] w-full bg-slate-900 overflow-hidden">
+          <img src="${posterSrc}" alt="${movie.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          
+          <!-- Format Tag -->
+          <span class="absolute top-2 left-2 ${formatBadgeBg} font-black text-[10px] uppercase px-2 py-0.5 rounded shadow">
+            ${movie.format}
+          </span>
+
+          <!-- Packaging Indicators -->
+          <div class="absolute bottom-2 right-2 flex space-x-1">
+            ${movie.packaging === 'Steelbook' ? '<span class="bg-slate-900/90 text-amber-400 p-1 rounded text-[10px] border border-amber-500/50" title="Steelbook"><i class="fa-solid fa-box-archive"></i></span>' : ''}
+            ${movie.hasSlipcover ? '<span class="bg-slate-900/90 text-sky-400 p-1 rounded text-[10px] border border-sky-500/50" title="Slipcover"><i class="fa-solid fa-layer-group"></i></span>' : ''}
+            ${movie.hdrType && movie.hdrType !== 'None/SDR' ? `<span class="bg-slate-900/90 text-yellow-400 px-1 py-0.5 rounded text-[9px] font-bold border border-yellow-500/50">${movie.hdrType}</span>` : ''}
+          </div>
+        </div>
+
+        <div class="p-2.5 flex-1 flex flex-col justify-between">
+          <div>
+            <h4 class="font-bold text-xs text-white line-clamp-1">${movie.title}</h4>
+            <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${movie.director || 'Unknown Director'}</p>
+          </div>
+
+          <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/50 text-slate-400 text-xs">
+            <button onclick="editMovie('${movie.id}')" class="hover:text-amber-400"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteMovie('${movie.id}')" class="hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    // Filter Controls
+    function setFormatFilter(fmt) {
+      currentFormatFilter = fmt;
+      document.querySelectorAll('.filter-fmt-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      document.getElementById(`filter-fmt-${fmt}`).classList.add('bg-amber-500', 'text-slate-950');
+      document.getElementById(`filter-fmt-${fmt}`).classList.remove('bg-slate-800', 'text-slate-300');
+      renderCatalog();
+    }
+
+    function toggleSpecialFilter(type) {
+      specialFilters[type] = !specialFilters[type];
+      const btn = document.getElementById(`filter-${type}`);
+      if (specialFilters[type]) {
+        btn.classList.add('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
+      } else {
+        btn.classList.remove('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
+      }
+      renderCatalog();
+    }
+
+    function filterCatalog() {
+      const searchVal = document.getElementById('search-input').value;
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (searchVal) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      renderCatalog();
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      renderCatalog();
+    }
+
+    function updateStats() {
+      const summary = document.getElementById('stats-summary');
+      const count4k = collection.filter(m => m.format === '4K UHD').length;
+      summary.innerText = `${collection.length} Editions (${count4k} 4K UHD)`;
+    }
+
+    // Upgrades Tab Engine
+    function updateUpgradesTab() {
+      const list = document.getElementById('upgrades-list');
+      const badge = document.getElementById('upgrade-badge');
+      list.innerHTML = '';
+
+      const upgradeCandidates = collection.filter(m => (m.format === 'DVD' || m.format === 'Blu-ray') && m.has4kUpgrade);
+
+      if (upgradeCandidates.length > 0) {
+        badge.innerText = upgradeCandidates.length;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (upgradeCandidates.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-8 text-slate-500 text-xs">
+            <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2 block"></i>
+            No upgrades detected! All your DVDs and Blu-rays either don't have a 4K UHD transfer available yet, or are already upgraded.
+          </div>
+        `;
+        return;
+      }
+
+      upgradeCandidates.forEach(m => {
+        const item = document.createElement('div');
+        item.className = "bg-slate-800 border border-slate-700 rounded-xl p-3 flex items-center justify-between";
+        item.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <img src="${m.poster || 'https://via.placeholder.com/80'}" class="w-12 h-16 object-cover rounded">
+            <div>
+              <h4 class="font-bold text-sm text-white">${m.title}</h4>
+              <p class="text-xs text-slate-400 mt-0.5">You own: <span class="text-amber-400 font-semibold">${m.format}</span></p>
+              <span class="inline-block bg-amber-500/10 text-amber-400 text-[10px] px-2 py-0.5 rounded border border-amber-500/30 mt-1">
+                4K UHD Disc Available
+              </span>
+            </div>
+          </div>
+          <button onclick="upgradeTo4k('${m.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg shadow">
+            Mark 4K
+          </button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function upgradeTo4k(id) {
+      const movie = collection.find(m => m.id === id);
+      if (movie) {
+        movie.format = '4K UHD';
+        movie.has4kUpgrade = false;
+        saveCollection();
+        renderCatalog();
+        alert(`Upgraded "${movie.title}" to 4K UHD format!`);
+      }
+    }
+
+    // Recommendations Engine
+    function updateRecommendationsTab() {
+      const container = document.getElementById('recs-list');
+      container.innerHTML = '';
+
+      if (collection.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-500 text-xs">Add items to your catalog to unlock movie recommendations.</div>`;
+        return;
+      }
+
+      // Compute Top Directors
+      const directors = {};
+      collection.forEach(m => {
+        if (m.director) directors[m.director] = (directors[m.director] || 0) + 1;
+      });
+
+      const topDirector = Object.keys(directors).sort((a,b) => directors[b] - directors[a])[0] || "Christopher Nolan";
+
+      const mockRecs = [
+        { title: "Dune: Part Two", director: topDirector, studio: "Warner Bros", poster: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" },
+        { title: "Interstellar", director: "Christopher Nolan", studio: "Paramount", poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
+        { title: "Mad Max: Fury Road", director: "George Miller", studio: "Warner Bros", poster: "https://image.tmdb.org/t/p/w500/8tZYtuWezp8T2M1Y2R392x1591.jpg" },
+        { title: "Alien 4K UHD", director: "Ridley Scott", studio: "20th Century Fox", poster: "https://image.tmdb.org/t/p/w500/vfrQk3IPR2A379Rj4eR1L5I692.jpg" }
+      ];
+
+      mockRecs.forEach(rec => {
+        const item = document.createElement('div');
+        item.className = "bg-slate-800 border border-slate-700/80 rounded-xl overflow-hidden flex flex-col p-2";
+        item.innerHTML = `
+          <img src="${rec.poster}" class="w-full aspect-[2/3] object-cover rounded-lg mb-2">
+          <h4 class="font-bold text-xs text-white line-clamp-1">${rec.title}</h4>
+          <p class="text-[11px] text-slate-400 line-clamp-1">${rec.director}</p>
+          <button onclick="addRecToCatalog('${rec.title}', '${rec.director}', '${rec.poster}')" class="mt-2 bg-slate-700 hover:bg-slate-600 text-amber-400 text-[11px] font-semibold py-1 rounded-lg w-full">
+            + Add To Wishlist
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function addRecToCatalog(title, director, poster) {
+      const newMovie = {
+        id: 'm_' + Date.now(),
+        title: title,
+        format: '4K UHD',
+        packaging: 'Standard Case',
+        hasSlipcover: true,
+        hdrType: 'HDR10',
+        audioFormat: 'Dolby Atmos',
+        director: director,
+        studio: 'Studio',
+        genre: 'Drama',
+        upc: '',
+        has4kUpgrade: false,
+        poster: poster
+      };
+      collection.push(newMovie);
+      saveCollection();
+      renderCatalog();
+      alert(`Added "${title}" to your physical media collection!`);
+    }
+
+    // Modal & Form Handlers
+    function openAddModal() {
+      document.getElementById('modal-title').innerText = "Add Physical Edition";
+      document.getElementById('form-id').value = '';
+      document.getElementById('form-title').value = '';
+      document.getElementById('form-director').value = '';
+      document.getElementById('form-studio').value = '';
+      document.getElementById('form-upc').value = '';
+      document.getElementById('form-poster').value = '';
+      document.getElementById('form-audio').value = '';
+      document.getElementById('form-slipcover').checked = false;
+      document.getElementById('form-has4k').checked = false;
+      document.getElementById('tmdb-results').classList.add('hidden');
+      document.getElementById('movie-modal').classList.remove('hidden');
+    }
+
+    function editMovie(id) {
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById('modal-title').innerText = "Edit Physical Edition";
+      document.getElementById('form-id').value = m.id;
+      document.getElementById('form-title').value = m.title;
+      document.getElementById('form-format').value = m.format;
+      document.getElementById('form-packaging').value = m.packaging;
+      document.getElementById('form-director').value = m.director || '';
+      document.getElementById('form-studio').value = m.studio || '';
+      document.getElementById('form-hdr').value = m.hdrType || 'None/SDR';
+      document.getElementById('form-audio').value = m.audioFormat || '';
+      document.getElementById('form-slipcover').checked = m.hasSlipcover || false;
+      document.getElementById('form-has4k').checked = m.has4kUpgrade || false;
+      document.getElementById('form-upc').value = m.upc || '';
+      document.getElementById('form-poster').value = m.poster || '';
+
+      document.getElementById('movie-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('movie-modal').classList.add('hidden');
+    }
+
+    function saveMovieForm() {
+      const id = document.getElementById('form-id').value;
+      const title = document.getElementById('form-title').value.trim();
+
+      if (!title) {
+        alert("Please enter a movie title.");
+        return;
+      }
+
+      const movieData = {
+        id: id || ('m_' + Date.now()),
+        title: title,
+        format: document.getElementById('form-format').value,
+        packaging: document.getElementById('form-packaging').value,
+        director: document.getElementById('form-director').value.trim(),
+        studio: document.getElementById('form-studio').value.trim(),
+        hdrType: document.getElementById('form-hdr').value,
+        audioFormat: document.getElementById('form-audio').value.trim(),
+        hasSlipcover: document.getElementById('form-slipcover').checked,
+        has4kUpgrade: document.getElementById('form-has4k').checked,
+        upc: document.getElementById('form-upc').value.trim(),
+        poster: document.getElementById('form-poster').value.trim()
+      };
+
+      if (id) {
+        const idx = collection.findIndex(m => m.id === id);
+        if (idx !== -1) collection[idx] = movieData;
+      } else {
+        collection.unshift(movieData);
+      }
+
+      saveCollection();
+      renderCatalog();
+      closeModal();
+    }
+
+    function deleteMovie(id) {
+      if (confirm("Delete this movie from your catalog?")) {
+        collection = collection.filter(m => m.id !== id);
+        saveCollection();
+        renderCatalog();
+      }
+    }
+
+    // TMDB Title Search
+    async function searchTMDBForTitle() {
+      const query = document.getElementById('form-title').value.trim();
+      const apiKey = localStorage.getItem('tmdb_api_key');
+      const resultsDiv = document.getElementById('tmdb-results');
+
+      if (!query) return;
+
+      if (!apiKey) {
+        alert("Please add your free TMDB API key in App Settings to search live metadata.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        resultsDiv.innerHTML = '';
+        if (data.results && data.results.length > 0) {
+          resultsDiv.classList.remove('hidden');
+          data.results.slice(0, 4).forEach(movie => {
+            const row = document.createElement('div');
+            row.className = "p-1.5 hover:bg-slate-700 cursor-pointer flex items-center justify-between rounded";
+            row.innerHTML = `
+              <span>${movie.title} (${(movie.release_date || '').slice(0,4)})</span>
+              <i class="fa-solid fa-chevron-right text-slate-500"></i>
+            `;
+            row.onclick = () => {
+              document.getElementById('form-title').value = movie.title;
+              if (movie.poster_path) {
+                document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+              }
+              resultsDiv.classList.add('hidden');
+            };
+            resultsDiv.appendChild(row);
+          });
+        } else {
+          resultsDiv.innerHTML = `<p class="p-1 text-slate-400">No results found on TMDB.</p>`;
+          resultsDiv.classList.remove('hidden');
+        }
+      } catch(e) {
+        alert("Error fetching TMDB metadata.");
+      }
+    }
+
+    // Camera Barcode Scanning Engine
+    function startCameraScanner() {
+      document.getElementById('start-scan-btn').classList.add('hidden');
+      document.getElementById('stop-scan-btn').classList.remove('hidden');
+
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        (decodedText) => {
+          handleScannedBarcode(decodedText);
+          stopCameraScanner();
+        },
+        () => {}
+      ).catch(err => {
+        alert("Unable to access camera: " + err);
+        stopCameraScanner();
+      });
+    }
+
+    function stopCameraScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner = null;
+          document.getElementById('start-scan-btn').classList.remove('hidden');
+          document.getElementById('stop-scan-btn').classList.add('hidden');
+        }).catch(() => {});
+      }
+    }
+
+    function handleManualUpcSubmit() {
+      const upc = document.getElementById('manual-upc-input').value.trim();
+      if (upc) {
+        handleScannedBarcode(upc);
+        document.getElementById('manual-upc-input').value = '';
+      }
+    }
+
+    function handleScannedBarcode(upc) {
+      openAddModal();
+      document.getElementById('form-upc').value = upc;
+      document.getElementById('form-title').value = "Scanned Movie (UPC: " + upc + ")";
+    }
+
+    // Settings & Import / Export
+    function openSettingsModal() {
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    function saveSettings() {
+      const key = document.getElementById('tmdb-api-key-input').value.trim();
+      localStorage.setItem('tmdb_api_key', key);
+      closeSettingsModal();
+      alert("Settings saved!");
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
+      const anchor = document.createElement('a');
+      anchor.setAttribute("href", dataStr);
+      anchor.setAttribute("download", "filmvault_catalog_backup.json");
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+
+    function importDataPrompt() {
+      const json = prompt("Paste your FilmVault backup JSON data here:");
+      if (json) {
+        try {
+          const parsed = JSON.parse(json);
+          if (Array.isArray(parsed)) {
+            collection = parsed;
+            saveCollection();
+            renderCatalog();
+            alert("Catalog data imported successfully!");
+            closeSettingsModal();
+          }
+        } catch(e) {
+          alert("Invalid JSON format.");
+        }
+      }
+    }
+
+    function loadDemoData() {
+      if (confirm("Reset current catalog and load sample demo data?")) {
+        collection = SAMPLE_MOVIES;
+        saveCollection();
+        renderCatalog();
+        closeSettingsModal();
+      }
+    }
+
+    // App Initialization
+    window.onload = initApp;
+  </script>
+</body>
+</html>
