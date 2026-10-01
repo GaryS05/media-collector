@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FilmVault - Collector Catalog</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FilmVault - Physical Collector Catalog</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -14,122 +16,128 @@
     body {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      background-color: #0f172a;
+      background-color: #0b0f19;
       color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-100">
 
   <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between z-10 shrink-0">
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between z-20 shrink-0">
     <div class="flex items-center space-x-3">
-      <div class="bg-gradient-to-tr from-amber-500 to-red-600 p-2 rounded-xl text-white shadow-lg">
+      <div class="bg-gradient-to-tr from-amber-500 to-red-600 p-2 rounded-xl text-slate-950 font-black shadow-lg shadow-amber-500/20">
         <i class="fa-solid fa-compact-disc text-lg"></i>
       </div>
       <div>
-        <h1 class="font-bold text-lg tracking-wide text-white leading-none">FilmVault</h1>
-        <p class="text-xs text-slate-400 mt-0.5" id="stats-summary">0 Physical Editions</p>
+        <h1 class="font-black text-lg tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">FilmVault</h1>
+        <p class="text-[11px] text-slate-400 font-medium" id="stats-summary">0 Physical Editions</p>
       </div>
     </div>
     <div class="flex items-center space-x-2">
-      <button onclick="openSettingsModal()" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 relative">
-        <i class="fa-solid fa-gear"></i>
+      <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition">
+        <i class="fa-solid fa-gear text-sm"></i>
       </button>
-      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-sm flex items-center shadow-md">
+      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition active:scale-95">
         <i class="fa-solid fa-plus mr-1.5"></i> Add
       </button>
     </div>
   </header>
 
   <!-- Progress Notification Toast -->
-  <div id="toast-banner" class="hidden bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2 flex items-center justify-between shrink-0 shadow-md">
+  <div id="toast-banner" class="hidden bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2.5 flex items-center justify-between shrink-0 shadow-xl transition-all">
     <span id="toast-message">Processing...</span>
-    <i class="fa-solid fa-spinner animate-spin"></i>
+    <i class="fa-solid fa-spinner animate-spin text-sm"></i>
   </div>
 
   <!-- Navigation Tabs -->
-  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-2 flex justify-around text-xs font-semibold text-slate-400 shrink-0">
-    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-2.5 px-3 border-b-2 border-amber-500 text-amber-500 flex items-center space-x-1.5">
+  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-3 flex justify-around text-xs font-bold text-slate-400 shrink-0">
+    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-3 px-4 border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 transition">
       <i class="fa-solid fa-film text-sm"></i>
       <span>Collection</span>
     </button>
-    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5">
+    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
       <i class="fa-solid fa-barcode text-sm"></i>
       <span>Scanner</span>
     </button>
-    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 relative">
+    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
       <i class="fa-solid fa-arrow-up-right-dots text-sm"></i>
       <span>4K Upgrades</span>
     </button>
   </nav>
 
-  <!-- Main Area -->
+  <!-- Main View Area -->
   <main class="flex-1 overflow-y-auto hide-scrollbar p-4 relative" id="main-container">
     
     <!-- CATALOG TAB -->
     <section id="tab-catalog" class="space-y-4">
-      <div class="space-y-2">
+      <div class="space-y-3">
         <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
           <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, labels..." 
-                 class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-9 pr-8 py-2 text-sm focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-400">
+                 class="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-8 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-500 shadow-inner">
         </div>
 
-        <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-1">
-          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3 py-1 rounded-full text-xs font-bold shrink-0">All</button>
-          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">4K UHD</button>
-          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">Blu-ray</button>
-          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">DVD</button>
+        <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-0.5">
+          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shrink-0 transition">All</button>
+          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">4K UHD</button>
+          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">Blu-ray</button>
+          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">DVD</button>
         </div>
       </div>
 
-      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5"></div>
 
-      <div id="empty-catalog" class="hidden text-center py-12 space-y-3">
-        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-500 text-2xl">
+      <div id="empty-catalog" class="hidden text-center py-16 space-y-3">
+        <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-600 text-2xl shadow-inner">
           <i class="fa-solid fa-film"></i>
         </div>
-        <h3 class="text-slate-300 font-semibold text-base">No movies found</h3>
+        <h3 class="text-slate-400 font-bold text-sm">No movies found in library</h3>
       </div>
     </section>
 
     <!-- SCANNER TAB -->
     <section id="tab-scanner" class="hidden space-y-4">
-      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 text-center space-y-3">
-        <h2 class="font-bold text-base text-white">UPC Barcode Camera Scanner</h2>
-        <div id="reader" class="overflow-hidden rounded-xl bg-black border border-slate-700 min-h-[200px] flex items-center justify-center relative">
-          <span class="text-slate-500 text-xs p-4">Camera inactive.</span>
+      <div class="glass-card rounded-2xl p-4 text-center space-y-3">
+        <h2 class="font-bold text-sm text-white uppercase tracking-wider">Camera Barcode Scanner</h2>
+        <div id="reader" class="overflow-hidden rounded-xl bg-black/60 border border-slate-800 min-h-[220px] flex items-center justify-center relative">
+          <span class="text-slate-500 text-xs font-medium">Camera inactive. Click start below.</span>
         </div>
         <div class="flex justify-center space-x-3 pt-1">
-          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center">
+          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition">
             <i class="fa-solid fa-camera mr-1.5"></i> Start Camera
           </button>
-          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center">
+          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center transition">
             <i class="fa-solid fa-stop mr-1.5"></i> Stop Camera
           </button>
         </div>
       </div>
 
-      <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Manual / Scanner UPC Input</h3>
+      <div class="glass-card rounded-2xl p-4 space-y-3">
+        <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Manual Barcode Input</h3>
         <div class="flex space-x-2">
-          <input type="text" id="manual-upc-input" placeholder="Enter UPC barcode..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
-          <button onclick="handleManualUpcSubmit()" class="bg-slate-700 hover:bg-slate-600 font-semibold px-4 py-2 rounded-xl text-xs text-white">Lookup</button>
+          <input type="text" id="manual-upc-input" placeholder="Enter UPC digits..." class="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500">
+          <button onclick="handleManualUpcSubmit()" class="bg-slate-800 hover:bg-slate-700 font-bold px-4 py-2 rounded-xl text-xs text-slate-200 border border-slate-700/60 transition">Lookup</button>
         </div>
       </div>
     </section>
 
     <!-- UPGRADES TAB -->
     <section id="tab-upgrades" class="hidden space-y-4">
-      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
-        <h2 class="font-bold text-base text-amber-400 flex items-center">
+      <div class="glass-card rounded-2xl p-4">
+        <h2 class="font-bold text-sm text-amber-400 flex items-center">
           <i class="fa-solid fa-sparkles mr-2"></i> Smart 4K UHD Upgrade Finder
         </h2>
-        <p class="text-xs text-slate-400 mt-1">DVDs or Blu-rays in your collection where a 4K UHD edition exists.</p>
+        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Displays standard Blu-ray or DVD releases in your collection that could be upgraded to 4K UHD.</p>
       </div>
       <div id="upgrades-list" class="space-y-3"></div>
     </section>
@@ -138,39 +146,39 @@
   <!-- MOVIE DETAIL MODAL -->
   <div id="detail-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
-      <button onclick="closeDetailModal()" class="absolute top-3 right-3 z-20 bg-slate-950/70 text-slate-300 hover:text-white p-2 rounded-full backdrop-blur-sm">
-        <i class="fa-solid fa-xmark text-lg"></i>
+      <button onclick="closeDetailModal()" class="absolute top-3 right-3 z-20 bg-slate-950/80 text-slate-300 hover:text-white p-2.5 rounded-full backdrop-blur-sm border border-slate-800 transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
       </button>
 
       <div class="overflow-y-auto hide-scrollbar space-y-4">
         <div class="relative aspect-video bg-slate-950 overflow-hidden flex items-center justify-center">
-          <img id="detail-backdrop" src="" class="w-full h-full object-cover opacity-60">
-          <button id="trailer-play-btn" onclick="openTrailerModal()" class="hidden absolute bg-amber-500 hover:bg-amber-400 text-slate-950 p-4 rounded-full shadow-2xl transition transform hover:scale-105">
-            <i class="fa-solid fa-play text-2xl ml-1"></i>
+          <img id="detail-backdrop" src="" class="w-full h-full object-cover opacity-50">
+          <button id="trailer-play-btn" onclick="openTrailerModal()" class="hidden absolute bg-amber-500 hover:bg-amber-400 text-slate-950 p-4 rounded-full shadow-2xl transition transform hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-play text-xl ml-0.5"></i>
           </button>
         </div>
 
-        <div class="p-5 space-y-4 -mt-6 relative z-10">
+        <div class="p-5 space-y-4 -mt-10 relative z-10">
           <div class="flex items-start space-x-4">
-            <img id="detail-poster" src="" class="w-24 h-36 object-cover rounded-xl shadow-2xl border border-slate-700/50 shrink-0">
-            <div>
-              <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">4K UHD</span>
-              <h2 id="detail-title" class="font-bold text-xl text-white mt-1 leading-tight">Movie Title</h2>
-              <p id="detail-director" class="text-xs text-slate-400 mt-0.5">Director Name</p>
-              <div id="detail-studio-badge" class="mt-2 inline-block bg-slate-800 border border-slate-700 text-amber-400 text-xs px-2.5 py-1 rounded-lg font-semibold">Studio</div>
+            <img id="detail-poster" src="" class="w-24 h-36 object-cover rounded-xl shadow-2xl border border-slate-700/60 shrink-0">
+            <div class="space-y-1">
+              <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded tracking-wide">4K UHD</span>
+              <h2 id="detail-title" class="font-bold text-lg text-white leading-tight">Movie Title</h2>
+              <p id="detail-director" class="text-xs text-slate-400">Director Name</p>
+              <div id="detail-studio-badge" class="mt-2 inline-block bg-slate-800 border border-slate-700/80 text-amber-400 text-[11px] px-2.5 py-1 rounded-lg font-bold">Studio</div>
             </div>
           </div>
 
-          <p id="detail-overview" class="text-xs text-slate-300 leading-relaxed">Movie synopsis...</p>
+          <p id="detail-overview" class="text-xs text-slate-300 leading-relaxed font-normal">Movie synopsis...</p>
 
-          <div class="grid grid-cols-2 gap-2 text-xs bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
-            <div><span class="text-slate-400">Purchased:</span> <span id="detail-date" class="text-slate-200 font-medium">N/A</span></div>
-            <div><span class="text-slate-400">Owned For:</span> <span id="detail-days" class="text-slate-200 font-medium">0 Days</span></div>
+          <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            <div><span class="text-slate-500 font-medium">Purchased:</span> <span id="detail-date" class="text-slate-200 font-semibold">N/A</span></div>
+            <div><span class="text-slate-500 font-medium">Owned For:</span> <span id="detail-days" class="text-slate-200 font-semibold">0 Days</span></div>
           </div>
 
-          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
-            <button id="detail-edit-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-4 py-2 rounded-xl text-xs">Edit</button>
-            <button id="detail-delete-btn" class="bg-red-900/40 border border-red-700/50 hover:bg-red-800/60 text-red-200 font-semibold px-4 py-2 rounded-xl text-xs">Delete</button>
+          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800/80">
+            <button id="detail-edit-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs border border-slate-700/50 transition">Edit</button>
+            <button id="detail-delete-btn" class="bg-red-950/40 border border-red-800/50 hover:bg-red-900/60 text-red-200 font-bold px-4 py-2 rounded-xl text-xs transition">Delete</button>
           </div>
         </div>
       </div>
@@ -179,44 +187,44 @@
 
   <!-- TRAILER MODAL -->
   <div id="trailer-modal" class="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-3xl aspect-video relative bg-black rounded-2xl overflow-hidden border border-slate-800">
-      <button onclick="closeTrailerModal()" class="absolute top-3 right-3 z-10 bg-slate-950/80 text-white p-2 rounded-full">
-        <i class="fa-solid fa-xmark text-lg"></i>
+    <div class="w-full max-w-3xl aspect-video relative bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+      <button onclick="closeTrailerModal()" class="absolute top-3 right-3 z-10 bg-slate-950/80 text-white p-2 rounded-full border border-slate-800">
+        <i class="fa-solid fa-xmark text-base"></i>
       </button>
       <iframe id="trailer-iframe" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
     </div>
   </div>
 
-  <!-- ADD/EDIT MODAL -->
-  <div id="movie-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <!-- ADD / EDIT MODAL -->
+  <div id="movie-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-      <div class="px-5 py-3 border-b border-slate-800 flex justify-between items-center">
-        <h3 id="modal-title" class="font-bold text-base text-white">Add Physical Edition</h3>
+      <div class="px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
+        <h3 id="modal-title" class="font-bold text-sm text-white uppercase tracking-wider">Add Physical Edition</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="p-5 overflow-y-auto space-y-4 flex-1 hide-scrollbar">
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Movie Title *</label>
+          <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Movie Title *</label>
           <div class="flex space-x-2">
-            <input type="text" id="form-title" placeholder="e.g. Oppenheimer" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-            <button onclick="searchTMDBForTitle()" class="bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs">Search TMDB</button>
+            <input type="text" id="form-title" placeholder="e.g. Oppenheimer" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <button onclick="searchTMDBForTitle()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shrink-0">Search TMDB</button>
           </div>
-          <div id="tmdb-results" class="hidden mt-2 bg-slate-800 border border-slate-700 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
+          <div id="tmdb-results" class="hidden mt-2 bg-slate-950 border border-slate-800 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Format *</label>
-            <select id="form-format" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Format *</label>
+            <select id="form-format" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
               <option value="4K UHD">4K UHD</option>
               <option value="Blu-ray">Blu-ray</option>
               <option value="DVD">DVD</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Packaging *</label>
-            <select id="form-packaging" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Packaging</label>
+            <select id="form-packaging" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
               <option value="Standard Case">Standard Case</option>
               <option value="Steelbook">Steelbook</option>
               <option value="Digibook">Digibook / Box Set</option>
@@ -226,23 +234,23 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Director</label>
-            <input type="text" id="form-director" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Director</label>
+            <input type="text" id="form-director" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Studio / Boutique Label</label>
-            <input type="text" id="form-studio" placeholder="Criterion, Arrow, etc." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Studio / Label</label>
+            <input type="text" id="form-studio" placeholder="Criterion, Arrow, etc." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Date Purchased</label>
-            <input type="date" id="form-date" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Date Purchased</label>
+            <input type="date" id="form-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Poster Image URL</label>
-            <input type="text" id="form-poster" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Poster URL</label>
+            <input type="text" id="form-poster" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
@@ -254,34 +262,34 @@
       </div>
 
       <div class="p-4 border-t border-slate-800 flex space-x-2 justify-end">
-        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancel</button>
-        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold">Save Movie</button>
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancel</button>
+        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-amber-500/10">Save Movie</button>
       </div>
     </div>
   </div>
 
   <!-- SETTINGS MODAL -->
-  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4">
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-white">App Settings</h3>
+        <h3 class="font-bold text-sm text-white uppercase tracking-wider">App Settings</h3>
         <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="space-y-4 text-xs">
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">TMDB API Key</label>
-          <input type="text" id="tmdb-api-key-input" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          <label class="block font-bold text-slate-400 mb-1 uppercase tracking-wider">TMDB API Key</label>
+          <input type="text" id="tmdb-api-key-input" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-amber-500">
         </div>
 
         <div class="space-y-2 border-t border-slate-800 pt-3">
-          <label class="block font-semibold text-slate-300">Libib CSV Import</label>
-          <input type="file" id="csv-file-input" accept=".csv" class="w-full bg-slate-800 text-slate-300 rounded-xl p-2 border border-slate-700 text-xs">
-          <button onclick="handleCSVImport()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 rounded-xl">Import Libib CSV</button>
+          <label class="block font-bold text-slate-400 uppercase tracking-wider">Libib CSV Import</label>
+          <input type="file" id="csv-file-input" accept=".csv" class="w-full bg-slate-950 text-slate-400 rounded-xl p-2 border border-slate-800 text-xs">
+          <button onclick="handleCSVImport()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">Import Libib CSV</button>
         </div>
 
         <div class="border-t border-slate-800 pt-3">
-          <button onclick="runBulkEnrichment()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl flex items-center justify-center">
+          <button onclick="runBulkEnrichment()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center transition shadow-lg shadow-indigo-600/20">
             <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Auto-Enrich Collection
           </button>
         </div>
@@ -329,11 +337,11 @@
     function switchTab(tab) {
       ['catalog', 'scanner', 'upgrades'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-500');
+        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-400');
         document.getElementById(`tab-btn-${t}`).classList.add('border-transparent');
       });
       document.getElementById(`tab-${tab}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-500');
+      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-400');
       if (tab !== 'scanner' && html5QrcodeScanner) stopCameraScanner();
       if (tab === 'upgrades') renderUpgrades();
     }
@@ -375,17 +383,17 @@
         emptyState.classList.add('hidden');
         filtered.forEach(m => {
           const card = document.createElement('div');
-          card.className = "bg-slate-800 border border-slate-700/80 rounded-xl overflow-hidden flex flex-col group relative shadow-md cursor-pointer hover:border-amber-500/50 transition";
+          card.className = "bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden flex flex-col group relative shadow-md cursor-pointer hover:border-amber-500/50 transition duration-200 transform hover:-translate-y-0.5";
           card.onclick = () => openDetailModal(m.id);
           card.innerHTML = `
-            <div class="relative aspect-[2/3] w-full bg-slate-900 overflow-hidden">
-              <img src="${m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster'}" class="w-full h-full object-cover">
-              <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">${m.format || 'Blu-ray'}</span>
+            <div class="relative aspect-[2/3] w-full bg-slate-950 overflow-hidden">
+              <img src="${m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded shadow">${m.format || 'Blu-ray'}</span>
             </div>
             <div class="p-2.5 flex-1 flex flex-col justify-between">
               <div>
                 <h4 class="font-bold text-xs text-white line-clamp-1">${m.title}</h4>
-                <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${m.director || 'Unknown Director'}</p>
+                <p class="text-[10px] text-slate-400 line-clamp-1 mt-0.5 font-medium">${m.director || 'Unknown Director'}</p>
               </div>
             </div>
           `;
@@ -680,7 +688,7 @@
         resultsDiv.classList.remove('hidden');
         data.results.slice(0, 4).forEach(movie => {
           const row = document.createElement('div');
-          row.className = "p-1.5 hover:bg-slate-700 cursor-pointer flex justify-between rounded text-slate-200";
+          row.className = "p-2 hover:bg-slate-800 cursor-pointer flex justify-between rounded text-slate-200 transition";
           row.innerHTML = `<span>${movie.title} (${(movie.release_date || '').slice(0,4)})</span>`;
           row.onclick = async () => {
             resultsDiv.classList.add('hidden');
@@ -698,22 +706,22 @@
       const upgrades = collection.filter(m => m.format !== '4K UHD');
 
       if (upgrades.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 p-4 text-center">No upgrade candidates found in your library.</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 p-6 text-center">No upgrade candidates found in your library.</p>';
         return;
       }
 
       upgrades.forEach(m => {
         const item = document.createElement('div');
-        item.className = "bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between";
+        item.className = "glass-card rounded-xl p-3 flex items-center justify-between";
         item.innerHTML = `
           <div class="flex items-center space-x-3">
-            <img src="${m.poster || 'https://via.placeholder.com/100'}" class="w-10 h-14 object-cover rounded">
+            <img src="${m.poster || 'https://via.placeholder.com/100'}" class="w-10 h-14 object-cover rounded shadow">
             <div>
               <h4 class="font-bold text-xs text-white">${m.title}</h4>
-              <p class="text-[11px] text-slate-400">Current Format: ${m.format}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Current Format: ${m.format}</p>
             </div>
           </div>
-          <button onclick="upgradeTo4K('${m.id}')" class="bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs">Mark 4K</button>
+          <button onclick="upgradeTo4K('${m.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow-md">Mark 4K</button>
         `;
         container.appendChild(item);
       });
@@ -810,10 +818,10 @@
       currentFormatFilter = fmt;
       document.querySelectorAll('.filter-fmt-btn').forEach(btn => {
         btn.classList.remove('bg-amber-500', 'text-slate-950');
-        btn.classList.add('bg-slate-800', 'text-slate-300');
+        btn.classList.add('bg-slate-800/80', 'text-slate-300');
       });
       document.getElementById(`filter-fmt-${fmt}`).classList.add('bg-amber-500', 'text-slate-950');
-      document.getElementById(`filter-fmt-${fmt}`).classList.remove('bg-slate-800', 'text-slate-300');
+      document.getElementById(`filter-fmt-${fmt}`).classList.remove('bg-slate-800/80', 'text-slate-300');
       renderCatalog();
     }
 
