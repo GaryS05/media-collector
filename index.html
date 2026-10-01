@@ -40,12 +40,15 @@
       </div>
       <div>
         <h1 class="font-black text-lg tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">FilmVault</h1>
-        <p class="text-[11px] text-slate-400 font-medium" id="stats-summary">0 Physical Editions</p>
+        <p class="text-[11px] text-slate-400 font-medium" id="stats-summary">0 Items | 0 Discs | 0 Copies</p>
       </div>
     </div>
     <div class="flex items-center space-x-2">
-      <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition">
+      <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition" title="Settings & Import">
         <i class="fa-solid fa-gear text-sm"></i>
+      </button>
+      <button onclick="openClearModal()" class="p-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 transition" title="Clear Collection">
+        <i class="fa-solid fa-trash-can text-sm"></i>
       </button>
       <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition active:scale-95">
         <i class="fa-solid fa-plus mr-1.5"></i> Add
@@ -83,7 +86,7 @@
       <div class="space-y-3">
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, labels..." 
+          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, publishers, barcodes..." 
                  class="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-8 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-500 shadow-inner">
         </div>
 
@@ -101,7 +104,7 @@
         <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-600 text-2xl shadow-inner">
           <i class="fa-solid fa-film"></i>
         </div>
-        <h3 class="text-slate-400 font-bold text-sm">No movies found in library</h3>
+        <h3 class="text-slate-400 font-bold text-sm">No titles found in collection</h3>
       </div>
     </section>
 
@@ -125,7 +128,7 @@
       <div class="glass-card rounded-2xl p-4 space-y-3">
         <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Manual Barcode Input</h3>
         <div class="flex space-x-2">
-          <input type="text" id="manual-upc-input" placeholder="Enter UPC digits..." class="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="manual-upc-input" placeholder="Enter UPC / EAN digits..." class="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500">
           <button onclick="handleManualUpcSubmit()" class="bg-slate-800 hover:bg-slate-700 font-bold px-4 py-2 rounded-xl text-xs text-slate-200 border border-slate-700/60 transition">Lookup</button>
         </div>
       </div>
@@ -161,23 +164,29 @@
         <div class="p-5 space-y-4 -mt-10 relative z-10">
           <div class="flex items-start space-x-4">
             <img id="detail-poster" src="" class="w-24 h-36 object-cover rounded-xl shadow-2xl border border-slate-700/60 shrink-0">
-            <div class="space-y-1">
+            <div class="space-y-1 flex-1 min-w-0">
               <div class="flex items-center space-x-2">
                 <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded tracking-wide">4K UHD</span>
                 <span id="detail-rating-badge" class="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-bold px-2 py-0.5 rounded flex items-center">
                   <i class="fa-solid fa-star text-[9px] mr-1"></i><span id="detail-rating">N/A</span>
                 </span>
               </div>
-              <h2 id="detail-title" class="font-bold text-lg text-white leading-tight">Movie Title</h2>
-              <p id="detail-director" class="text-xs text-slate-400">Director Name</p>
+              <h2 id="detail-title" class="font-bold text-lg text-white leading-tight truncate">Movie Title</h2>
+              <p id="detail-director" class="text-xs text-slate-400 truncate">Director Name</p>
               <div id="detail-studio-badge" class="mt-2 inline-block bg-slate-800 border border-slate-700/80 text-amber-400 text-[11px] px-2.5 py-1 rounded-lg font-bold">Studio</div>
             </div>
           </div>
 
           <p id="detail-overview" class="text-xs text-slate-300 leading-relaxed font-normal">Movie synopsis...</p>
 
+          <div class="grid grid-cols-3 gap-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            <div><span class="text-slate-500 font-medium block">Discs:</span> <span id="detail-discs" class="text-slate-200 font-semibold">1</span></div>
+            <div><span class="text-slate-500 font-medium block">Copies:</span> <span id="detail-copies" class="text-slate-200 font-semibold">1</span></div>
+            <div><span class="text-slate-500 font-medium block">Length:</span> <span id="detail-length" class="text-slate-200 font-semibold">N/A</span></div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
-            <div><span class="text-slate-500 font-medium">Purchased:</span> <span id="detail-date" class="text-slate-200 font-semibold">N/A</span></div>
+            <div><span class="text-slate-500 font-medium">Added / Purchased:</span> <span id="detail-date" class="text-slate-200 font-semibold">N/A</span></div>
             <div><span class="text-slate-500 font-medium">Owned For:</span> <span id="detail-days" class="text-slate-200 font-semibold">0 Days</span></div>
           </div>
 
@@ -212,7 +221,7 @@
         <div>
           <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Movie Title *</label>
           <div class="flex space-x-2">
-            <input type="text" id="form-title" placeholder="e.g. Oppenheimer" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <input type="text" id="form-title" placeholder="e.g. Goonies, The" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
             <button onclick="searchTMDBForTitle()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shrink-0">Search TMDB</button>
           </div>
           <div id="tmdb-results" class="hidden mt-2 bg-slate-950 border border-slate-800 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
@@ -237,20 +246,35 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Director</label>
-            <input type="text" id="form-director" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Discs</label>
+            <input type="number" id="form-discs" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Studio / Label</label>
-            <input type="text" id="form-studio" placeholder="Criterion, Arrow, etc." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Copies</label>
+            <input type="number" id="form-copies" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Length (Min)</label>
+            <input type="text" id="form-length" placeholder="120" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Date Purchased</label>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Director / Creators</label>
+            <input type="text" id="form-director" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Publisher / Studio</label>
+            <input type="text" id="form-studio" placeholder="Criterion, Warner, etc." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Date Added</label>
             <input type="date" id="form-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
           <div>
@@ -289,9 +313,9 @@
         </div>
 
         <div class="space-y-2 border-t border-slate-800 pt-3">
-          <label class="block font-bold text-slate-400 uppercase tracking-wider">Libib CSV Import</label>
+          <label class="block font-bold text-slate-400 uppercase tracking-wider">CSV Catalog Import</label>
           <input type="file" id="csv-file-input" accept=".csv" class="w-full bg-slate-950 text-slate-400 rounded-xl p-2 border border-slate-800 text-xs">
-          <button onclick="handleCSVImport()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">Import Libib CSV</button>
+          <button onclick="handleCSVImport()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">Import CSV File</button>
         </div>
 
         <div class="border-t border-slate-800 pt-3">
@@ -303,6 +327,23 @@
 
       <div class="pt-2 text-right">
         <button onclick="saveSettings()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLEAR COLLECTION SAFEGUARD MODAL -->
+  <div id="clear-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500 text-xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-white">Clear Collection?</h3>
+        <p class="text-xs text-slate-400 mt-1">This action cannot be undone. All imported media titles and metadata will be permanently deleted from local storage.</p>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button onclick="closeClearModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+        <button onclick="confirmClearCollection()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-xs transition shadow-lg shadow-red-600/20">Clear All</button>
       </div>
     </div>
   </div>
@@ -352,19 +393,30 @@
       if (tab === 'upgrades') renderUpgrades();
     }
 
-    // Strips outer quotes, parentheses, brackets, and extra whitespace for reliable API queries and UI display
-    function cleanTitleString(str) {
-      if (!str) return '';
-      let cleaned = str.trim();
-      // Unquote wrapping quotes repeatedly
-      cleaned = cleaned.replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, '').trim();
-      // Remove outer enclosing parentheses if entire title is wrapped: (Movie Name) -> Movie Name
-      if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
-        cleaned = cleaned.substring(1, cleaned.length - 1).trim();
-      }
-      // Remove extraneous trailing format hints in parentheses e.g. "Oppenheimer (4K)"
-      cleaned = cleaned.replace(/\s*\((4k\vert{}uhd\vert{}bluray\vert{}blu-ray\vert{}dvd\vert{}steelbook\vert{}hd)\)/gi, '').trim();
-      return cleaned;
+    // Title cleaning parser function
+    function cleanTitle(rawStr) {
+      if (!rawStr) return '';
+      let str = rawStr.trim();
+
+      // 1. Strip surrounding double or single quotes
+      str = str.replace(/^["']+|["']+$/g, '').trim();
+
+      // 2. Remove format indicators in square brackets like [BD], [4K], [DVD], [UHD], [Steelbook]
+      str = str.replace(/\[\s*(BD|4K|UHD|DVD|Blu-ray|Steelbook|HD|3D)\s*\]/gi, '').trim();
+
+      // 3. Fix inverted prefix titles (e.g. "Goonies, The" -> "The Goonies", "Matrix, The" -> "The Matrix")
+      str = str.replace(/^([^,]+),\s*(The|A|An)\b/i, '$2 $1').trim();
+
+      // 4. Remove unclosed trailing parenthetical fragments like "(FLASHBACK" or "(1999"
+      str = str.replace(/\s*\([^\)]*$/g, '').trim();
+
+      // 5. Remove closed format tags in parentheses, e.g., "(4K)", "(Blu-ray)"
+      str = str.replace(/\s*\(\s*(4k|uhd|bluray|blu-ray|dvd|steelbook|hd)\s*\)/gi, '').trim();
+
+      // 6. Clean up trailing/standalone bracket or format fragments
+      str = str.replace(/\b(BD|4K|UHD|DVD)\b$/gi, '').trim();
+
+      return str;
     }
 
     function parseFormatString(rawFormat, titleContext = '') {
@@ -394,7 +446,8 @@
         if (searchVal) {
           return movie.title.toLowerCase().includes(searchVal) ||
                  (movie.director || '').toLowerCase().includes(searchVal) ||
-                 (movie.studio || '').toLowerCase().includes(searchVal);
+                 (movie.studio || '').toLowerCase().includes(searchVal) ||
+                 (movie.upc || '').toLowerCase().includes(searchVal);
         }
         return true;
       });
@@ -455,7 +508,8 @@
           studio: studio,
           overview: data.overview || '',
           trailer: trailerKey,
-          rating: data.vote_average ? data.vote_average.toFixed(1) : ''
+          rating: data.vote_average ? data.vote_average.toFixed(1) : '',
+          length: data.runtime ? `${data.runtime} min` : ''
         };
       } catch (err) {
         return null;
@@ -466,7 +520,7 @@
       const apiKey = localStorage.getItem('tmdb_api_key');
       if (!apiKey) return movie;
 
-      const cleanQuery = cleanTitleString(movie.title);
+      const cleanQuery = cleanTitle(movie.title);
 
       try {
         let tmdbId = null;
@@ -474,7 +528,7 @@
           const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${movie.upc}`);
           const upcData = await upcRes.json();
           if (upcData.items && upcData.items.length > 0) {
-            let cleanUpcTitle = cleanTitleString(upcData.items[0].title.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
+            let cleanUpcTitle = cleanTitle(upcData.items[0].title.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
             const sRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanUpcTitle)}`);
             const sData = await sRes.json();
             if (sData.results && sData.results.length > 0) tmdbId = sData.results[0].id;
@@ -498,6 +552,7 @@
             movie.overview = details.overview;
             movie.trailer = details.trailer;
             movie.rating = details.rating;
+            if (!movie.length && details.length) movie.length = details.length;
           }
         }
       } catch (e) {}
@@ -516,7 +571,7 @@
 
       for (let i = 0; i < collection.length; i++) {
         if (needsEnrichment(collection[i])) {
-          showToast(`Enriching item ${updatedCount + 1} of ${toEnrich.length}: ${cleanTitleString(collection[i].title)}`);
+          showToast(`Enriching item ${updatedCount + 1} of ${toEnrich.length}: ${cleanTitle(collection[i].title)}`);
           collection[i] = await enrichSingleMovie(collection[i]);
           updatedCount++;
           saveCollection();
@@ -541,6 +596,10 @@
       document.getElementById('detail-rating').innerText = m.rating || 'N/A';
       document.getElementById('detail-poster').src = m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster';
       document.getElementById('detail-backdrop').src = m.backdrop || m.poster || '';
+
+      document.getElementById('detail-discs').innerText = m.numberOfDiscs || 1;
+      document.getElementById('detail-copies').innerText = m.copies || 1;
+      document.getElementById('detail-length').innerText = m.length || 'N/A';
 
       const dateStr = m.datePurchased ? new Date(m.datePurchased).toLocaleDateString() : 'N/A';
       document.getElementById('detail-date').innerText = dateStr;
@@ -577,6 +636,31 @@
       document.getElementById('trailer-modal').classList.add('hidden');
     }
 
+    // Helper for robust CSV row parsing with quoted field awareness
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
     async function handleCSVImport() {
       const fileInput = document.getElementById('csv-file-input');
       if (!fileInput.files.length) return alert("Select a CSV file first.");
@@ -589,35 +673,44 @@
         const lines = text.split(/\r?\n/);
         if (lines.length < 2) return;
 
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, '').toLowerCase());
+        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
         
+        const idIdx = headers.findIndex(h => h === 'id');
+        const itemTypeIdx = headers.findIndex(h => h.includes('item_type') || h.includes('category') || h.includes('medium') || h.includes('format'));
         const titleIdx = headers.findIndex(h => h.includes('title'));
-        const directorIdx = headers.findIndex(h => h.includes('creators') || h.includes('director') || h.includes('author'));
-        const upcIdx = headers.findIndex(h => h.includes('upc') || h.includes('ean') || h.includes('barcode'));
-        const fmtIdx = headers.findIndex(h => h.includes('medium') || h.includes('format') || h.includes('category'));
-        const studioIdx = headers.findIndex(h => h.includes('publisher') || h.includes('studio') || h.includes('label'));
+        const creatorsIdx = headers.findIndex(h => h.includes('creators') || h.includes('ensemble') || h.includes('director') || h.includes('author'));
+        const publisherIdx = headers.findIndex(h => h.includes('publisher') || h.includes('studio') || h.includes('label'));
+        const lengthIdx = headers.findIndex(h => h.includes('length') || h.includes('runtime'));
+        const discsIdx = headers.findIndex(h => h.includes('number_of_discs') || h.includes('discs'));
+        const copiesIdx = headers.findIndex(h => h.includes('copies'));
+        const eanIdx = headers.findIndex(h => h.includes('ean_isbn13') || h.includes('ean') || h.includes('barcode'));
+        const upcIdx = headers.findIndex(h => h.includes('upc_isbn10') || h.includes('upc'));
         const dateIdx = headers.findIndex(h => h.includes('added') || h.includes('date'));
 
         let imported = [];
 
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
-          const row = lines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(cell => cell.trim().replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, ''));
+          const row = parseCSVLine(lines[i]);
 
           const rawTitle = titleIdx !== -1 ? row[titleIdx] : '';
-          const cleanedTitle = cleanTitleString(rawTitle);
+          const cleanedTitle = cleanTitle(rawTitle);
           if (!cleanedTitle) continue;
 
-          const rawFmt = fmtIdx !== -1 ? row[fmtIdx] : '';
+          const itemType = itemTypeIdx !== -1 ? row[itemTypeIdx] : '';
+          const barcode = (eanIdx !== -1 && row[eanIdx]) ? row[eanIdx] : (upcIdx !== -1 ? row[upcIdx] : '');
 
           let item = {
-            id: 'm_' + Date.now() + '_' + i,
+            id: (idIdx !== -1 && row[idIdx]) ? row[idIdx] : ('m_' + Date.now() + '_' + i),
             title: cleanedTitle,
-            director: directorIdx !== -1 ? row[directorIdx] : '',
-            format: parseFormatString(rawFmt, rawTitle),
-            upc: upcIdx !== -1 ? row[upcIdx] : '',
-            studio: studioIdx !== -1 ? row[studioIdx] : '',
-            datePurchased: dateIdx !== -1 ? row[dateIdx] : new Date().toISOString().split('T')[0],
+            director: creatorsIdx !== -1 ? row[creatorsIdx] : '',
+            format: parseFormatString(itemType, rawTitle),
+            studio: publisherIdx !== -1 ? row[publisherIdx] : '',
+            length: lengthIdx !== -1 ? row[lengthIdx] : '',
+            numberOfDiscs: discsIdx !== -1 ? (parseInt(row[discsIdx]) || 1) : 1,
+            copies: copiesIdx !== -1 ? (parseInt(row[copiesIdx]) || 1) : 1,
+            upc: barcode,
+            datePurchased: dateIdx !== -1 && row[dateIdx] ? row[dateIdx] : new Date().toISOString().split('T')[0],
             poster: '',
             overview: '',
             backdrop: '',
@@ -650,7 +743,7 @@
         
         if (upcData.items && upcData.items.length > 0) {
           let rawTitle = upcData.items[0].title;
-          let cleanedTitle = cleanTitleString(rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
+          let cleanedTitle = cleanTitle(rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
 
           const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanedTitle)}`);
           const tmdbData = await tmdbRes.json();
@@ -668,7 +761,7 @@
     }
 
     function fillFormWithDetails(d) {
-      document.getElementById('form-title').value = cleanTitleString(d.title);
+      document.getElementById('form-title').value = cleanTitle(d.title);
       document.getElementById('form-director').value = d.director;
       document.getElementById('form-studio').value = d.studio;
       document.getElementById('form-poster').value = d.poster;
@@ -676,6 +769,7 @@
       document.getElementById('form-backdrop').value = d.backdrop;
       document.getElementById('form-trailer').value = d.trailer;
       document.getElementById('form-rating').value = d.rating;
+      if (d.length) document.getElementById('form-length').value = d.length;
     }
 
     function startCameraScanner() {
@@ -708,7 +802,7 @@
 
     async function searchTMDBForTitle() {
       const rawQuery = document.getElementById('form-title').value;
-      const query = cleanTitleString(rawQuery);
+      const query = cleanTitle(rawQuery);
       const apiKey = localStorage.getItem('tmdb_api_key');
       const resultsDiv = document.getElementById('tmdb-results');
 
@@ -780,6 +874,9 @@
       document.getElementById('form-poster').value = '';
       document.getElementById('form-upc').value = '';
       document.getElementById('form-rating').value = '';
+      document.getElementById('form-length').value = '';
+      document.getElementById('form-discs').value = '1';
+      document.getElementById('form-copies').value = '1';
       document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('movie-modal').classList.remove('hidden');
     }
@@ -797,6 +894,9 @@
       document.getElementById('form-packaging').value = m.packaging || 'Standard Case';
       document.getElementById('form-director').value = m.director || '';
       document.getElementById('form-studio').value = m.studio || '';
+      document.getElementById('form-length').value = m.length || '';
+      document.getElementById('form-discs').value = m.numberOfDiscs || 1;
+      document.getElementById('form-copies').value = m.copies || 1;
       document.getElementById('form-date').value = m.datePurchased || '';
       document.getElementById('form-upc').value = m.upc || '';
       document.getElementById('form-poster').value = m.poster || '';
@@ -811,7 +911,7 @@
     function saveMovieForm() {
       const id = document.getElementById('form-id').value;
       const rawTitle = document.getElementById('form-title').value;
-      const title = cleanTitleString(rawTitle);
+      const title = cleanTitle(rawTitle);
       if (!title) return alert("Title required.");
 
       const item = {
@@ -821,6 +921,9 @@
         packaging: document.getElementById('form-packaging').value,
         director: document.getElementById('form-director').value.trim(),
         studio: document.getElementById('form-studio').value.trim(),
+        length: document.getElementById('form-length').value.trim(),
+        numberOfDiscs: parseInt(document.getElementById('form-discs').value) || 1,
+        copies: parseInt(document.getElementById('form-copies').value) || 1,
         datePurchased: document.getElementById('form-date').value,
         upc: document.getElementById('form-upc').value.trim(),
         poster: document.getElementById('form-poster').value.trim(),
@@ -849,7 +952,26 @@
     }
 
     function updateStats() {
-      document.getElementById('stats-summary').innerText = `${collection.length} Physical Editions`;
+      const totalItems = collection.length;
+      const totalDiscs = collection.reduce((acc, item) => acc + (parseInt(item.numberOfDiscs) || 1), 0);
+      const totalCopies = collection.reduce((acc, item) => acc + (parseInt(item.copies) || 1), 0);
+
+      document.getElementById('stats-summary').innerText = `${totalItems} Items | ${totalDiscs} Discs | ${totalCopies} Copies`;
+    }
+
+    function openClearModal() {
+      document.getElementById('clear-modal').classList.remove('hidden');
+    }
+
+    function closeClearModal() {
+      document.getElementById('clear-modal').classList.add('hidden');
+    }
+
+    function confirmClearCollection() {
+      collection = [];
+      saveCollection();
+      renderCatalog();
+      closeClearModal();
     }
 
     function setFormatFilter(fmt) {
