@@ -162,7 +162,12 @@
           <div class="flex items-start space-x-4">
             <img id="detail-poster" src="" class="w-24 h-36 object-cover rounded-xl shadow-2xl border border-slate-700/60 shrink-0">
             <div class="space-y-1">
-              <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded tracking-wide">4K UHD</span>
+              <div class="flex items-center space-x-2">
+                <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded tracking-wide">4K UHD</span>
+                <span id="detail-rating-badge" class="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-bold px-2 py-0.5 rounded flex items-center">
+                  <i class="fa-solid fa-star text-[9px] mr-1"></i><span id="detail-rating">N/A</span>
+                </span>
+              </div>
               <h2 id="detail-title" class="font-bold text-lg text-white leading-tight">Movie Title</h2>
               <p id="detail-director" class="text-xs text-slate-400">Director Name</p>
               <div id="detail-studio-badge" class="mt-2 inline-block bg-slate-800 border border-slate-700/80 text-amber-400 text-[11px] px-2.5 py-1 rounded-lg font-bold">Studio</div>
@@ -259,6 +264,7 @@
         <input type="hidden" id="form-overview">
         <input type="hidden" id="form-backdrop">
         <input type="hidden" id="form-trailer">
+        <input type="hidden" id="form-rating">
       </div>
 
       <div class="p-4 border-t border-slate-800 flex space-x-2 justify-end">
@@ -346,20 +352,35 @@
       if (tab === 'upgrades') renderUpgrades();
     }
 
-    function parseFormatString(rawFormat) {
-      if (!rawFormat) return 'Blu-ray';
-      const fmt = rawFormat.toLowerCase();
-      if (fmt.includes('4k') || fmt.includes('uhd') || fmt.includes('ultra hd')) return '4K UHD';
-      if (fmt.includes('dvd')) return 'DVD';
-      if (fmt.includes('blu') || fmt.includes('bd')) return 'Blu-ray';
+    // Strips outer quotes, parentheses, brackets, and extra whitespace for reliable API queries and UI display
+    function cleanTitleString(str) {
+      if (!str) return '';
+      let cleaned = str.trim();
+      // Unquote wrapping quotes repeatedly
+      cleaned = cleaned.replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, '').trim();
+      // Remove outer enclosing parentheses if entire title is wrapped: (Movie Name) -> Movie Name
+      if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
+        cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+      }
+      // Remove extraneous trailing format hints in parentheses e.g. "Oppenheimer (4K)"
+      cleaned = cleaned.replace(/\s*\((4k\vert{}uhd\vert{}bluray\vert{}blu-ray\vert{}dvd\vert{}steelbook\vert{}hd)\)/gi, '').trim();
+      return cleaned;
+    }
+
+    function parseFormatString(rawFormat, titleContext = '') {
+      const combined = `${rawFormat || ''} ${titleContext || ''}`.toLowerCase();
+      if (combined.includes('4k') || combined.includes('uhd') || combined.includes('ultra hd') || combined.includes('2160p')) return '4K UHD';
+      if (combined.includes('dvd')) return 'DVD';
+      if (combined.includes('blu') || combined.includes('bd') || combined.includes('1080p')) return 'Blu-ray';
       return 'Blu-ray';
     }
 
     function needsEnrichment(movie) {
       const needsPoster = !movie.poster || movie.poster.trim() === '' || movie.poster.includes('placeholder');
       const needsDirector = !movie.director || movie.director.trim() === '' || movie.director.toLowerCase() === 'unknown director' || movie.director.toLowerCase() === 'n/a';
-      const needsStudio = !movie.studio || movie.studio.trim() === '' || movie.studio.toLowerCase() === 'n/a';
-      return needsPoster || needsDirector || needsStudio;
+      const needsOverview = !movie.overview || movie.overview.trim() === '' || movie.overview.toLowerCase() === 'no synopsis available.';
+      const needsTrailer = !movie.trailer;
+      return needsPoster || needsDirector || needsOverview || needsTrailer;
     }
 
     function renderCatalog() {
@@ -389,6 +410,7 @@
             <div class="relative aspect-[2/3] w-full bg-slate-950 overflow-hidden">
               <img src="${m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
               <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded shadow">${m.format || 'Blu-ray'}</span>
+              ${m.rating ? `<span class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-md text-amber-400 font-bold text-[9px] px-1.5 py-0.5 rounded border border-slate-700/60"><i class="fa-solid fa-star text-[8px] mr-1"></i>${m.rating}</span>` : ''}
             </div>
             <div class="p-2.5 flex-1 flex flex-col justify-between">
               <div>
@@ -432,7 +454,8 @@
           director: director,
           studio: studio,
           overview: data.overview || '',
-          trailer: trailerKey
+          trailer: trailerKey,
+          rating: data.vote_average ? data.vote_average.toFixed(1) : ''
         };
       } catch (err) {
         return null;
@@ -443,21 +466,23 @@
       const apiKey = localStorage.getItem('tmdb_api_key');
       if (!apiKey) return movie;
 
+      const cleanQuery = cleanTitleString(movie.title);
+
       try {
         let tmdbId = null;
         if (movie.upc) {
           const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${movie.upc}`);
           const upcData = await upcRes.json();
           if (upcData.items && upcData.items.length > 0) {
-            let clean = upcData.items[0].title.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, '').trim();
-            const sRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(clean)}`);
+            let cleanUpcTitle = cleanTitleString(upcData.items[0].title.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
+            const sRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanUpcTitle)}`);
             const sData = await sRes.json();
             if (sData.results && sData.results.length > 0) tmdbId = sData.results[0].id;
           }
         }
 
-        if (!tmdbId) {
-          const sRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(movie.title)}`);
+        if (!tmdbId && cleanQuery) {
+          const sRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanQuery)}`);
           const sData = await sRes.json();
           if (sData.results && sData.results.length > 0) tmdbId = sData.results[0].id;
         }
@@ -465,12 +490,14 @@
         if (tmdbId) {
           const details = await fetchMovieDetailsFromTMDB(tmdbId);
           if (details) {
+            movie.title = cleanQuery;
             movie.poster = movie.poster || details.poster;
             movie.backdrop = details.backdrop;
             movie.director = (!movie.director || movie.director === 'Unknown Director') ? details.director : movie.director;
             movie.studio = (!movie.studio || movie.studio === 'N/A') ? details.studio : movie.studio;
             movie.overview = details.overview;
             movie.trailer = details.trailer;
+            movie.rating = details.rating;
           }
         }
       } catch (e) {}
@@ -489,7 +516,7 @@
 
       for (let i = 0; i < collection.length; i++) {
         if (needsEnrichment(collection[i])) {
-          showToast(`Enriching item ${updatedCount + 1} of ${toEnrich.length}: ${collection[i].title}`);
+          showToast(`Enriching item ${updatedCount + 1} of ${toEnrich.length}: ${cleanTitleString(collection[i].title)}`);
           collection[i] = await enrichSingleMovie(collection[i]);
           updatedCount++;
           saveCollection();
@@ -511,6 +538,7 @@
       document.getElementById('detail-format').innerText = m.format || 'Blu-ray';
       document.getElementById('detail-studio-badge').innerText = m.studio || 'Standard Release';
       document.getElementById('detail-overview').innerText = m.overview || 'No synopsis available.';
+      document.getElementById('detail-rating').innerText = m.rating || 'N/A';
       document.getElementById('detail-poster').src = m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster';
       document.getElementById('detail-backdrop').src = m.backdrop || m.poster || '';
 
@@ -558,15 +586,15 @@
 
       reader.onload = async (e) => {
         const text = e.target.result;
-        const lines = text.split('\n');
+        const lines = text.split(/\r?\n/);
         if (lines.length < 2) return;
 
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, '').toLowerCase());
         
         const titleIdx = headers.findIndex(h => h.includes('title'));
         const directorIdx = headers.findIndex(h => h.includes('creators') || h.includes('director') || h.includes('author'));
         const upcIdx = headers.findIndex(h => h.includes('upc') || h.includes('ean') || h.includes('barcode'));
-        const fmtIdx = headers.findIndex(h => h.includes('medium') || h.includes('format'));
+        const fmtIdx = headers.findIndex(h => h.includes('medium') || h.includes('format') || h.includes('category'));
         const studioIdx = headers.findIndex(h => h.includes('publisher') || h.includes('studio') || h.includes('label'));
         const dateIdx = headers.findIndex(h => h.includes('added') || h.includes('date'));
 
@@ -574,23 +602,27 @@
 
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
-          const row = lines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(cell => cell.trim().replace(/^"\vert{}"$/g, ''));
+          const row = lines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(cell => cell.trim().replace(/^["']+|["']+$\vert{}^[“‘]+\vert{}[”’]+$/g, ''));
 
           const rawTitle = titleIdx !== -1 ? row[titleIdx] : '';
-          if (!rawTitle) continue;
+          const cleanedTitle = cleanTitleString(rawTitle);
+          if (!cleanedTitle) continue;
+
+          const rawFmt = fmtIdx !== -1 ? row[fmtIdx] : '';
 
           let item = {
             id: 'm_' + Date.now() + '_' + i,
-            title: rawTitle,
+            title: cleanedTitle,
             director: directorIdx !== -1 ? row[directorIdx] : '',
-            format: parseFormatString(fmtIdx !== -1 ? row[fmtIdx] : ''),
+            format: parseFormatString(rawFmt, rawTitle),
             upc: upcIdx !== -1 ? row[upcIdx] : '',
             studio: studioIdx !== -1 ? row[studioIdx] : '',
             datePurchased: dateIdx !== -1 ? row[dateIdx] : new Date().toISOString().split('T')[0],
             poster: '',
             overview: '',
             backdrop: '',
-            trailer: ''
+            trailer: '',
+            rating: ''
           };
 
           imported.push(item);
@@ -600,7 +632,7 @@
         saveCollection();
         renderCatalog();
         closeSettingsModal();
-        alert(`Successfully imported ${imported.length} items from Libib CSV!`);
+        alert(`Successfully imported ${imported.length} items from CSV! Run Auto-Enrich to pull poster art & metadata.`);
       };
 
       reader.readAsText(file);
@@ -618,7 +650,7 @@
         
         if (upcData.items && upcData.items.length > 0) {
           let rawTitle = upcData.items[0].title;
-          let cleanedTitle = rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, '').trim();
+          let cleanedTitle = cleanTitleString(rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition)\b/gi, ''));
 
           const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanedTitle)}`);
           const tmdbData = await tmdbRes.json();
@@ -636,13 +668,14 @@
     }
 
     function fillFormWithDetails(d) {
-      document.getElementById('form-title').value = d.title;
+      document.getElementById('form-title').value = cleanTitleString(d.title);
       document.getElementById('form-director').value = d.director;
       document.getElementById('form-studio').value = d.studio;
       document.getElementById('form-poster').value = d.poster;
       document.getElementById('form-overview').value = d.overview;
       document.getElementById('form-backdrop').value = d.backdrop;
       document.getElementById('form-trailer').value = d.trailer;
+      document.getElementById('form-rating').value = d.rating;
     }
 
     function startCameraScanner() {
@@ -674,7 +707,8 @@
     }
 
     async function searchTMDBForTitle() {
-      const query = document.getElementById('form-title').value.trim();
+      const rawQuery = document.getElementById('form-title').value;
+      const query = cleanTitleString(rawQuery);
       const apiKey = localStorage.getItem('tmdb_api_key');
       const resultsDiv = document.getElementById('tmdb-results');
 
@@ -745,6 +779,7 @@
       document.getElementById('form-studio').value = '';
       document.getElementById('form-poster').value = '';
       document.getElementById('form-upc').value = '';
+      document.getElementById('form-rating').value = '';
       document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('movie-modal').classList.remove('hidden');
     }
@@ -768,13 +803,15 @@
       document.getElementById('form-overview').value = m.overview || '';
       document.getElementById('form-backdrop').value = m.backdrop || '';
       document.getElementById('form-trailer').value = m.trailer || '';
+      document.getElementById('form-rating').value = m.rating || '';
 
       document.getElementById('movie-modal').classList.remove('hidden');
     }
 
     function saveMovieForm() {
       const id = document.getElementById('form-id').value;
-      const title = document.getElementById('form-title').value.trim();
+      const rawTitle = document.getElementById('form-title').value;
+      const title = cleanTitleString(rawTitle);
       if (!title) return alert("Title required.");
 
       const item = {
@@ -789,7 +826,8 @@
         poster: document.getElementById('form-poster').value.trim(),
         overview: document.getElementById('form-overview').value,
         backdrop: document.getElementById('form-backdrop').value,
-        trailer: document.getElementById('form-trailer').value
+        trailer: document.getElementById('form-trailer').value,
+        rating: document.getElementById('form-rating').value
       };
 
       if (id) {
