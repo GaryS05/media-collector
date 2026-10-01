@@ -322,7 +322,11 @@
         if (currentFormatFilter !== 'ALL' && movie.format !== currentFormatFilter) return false;
         if (specialFilters.steelbook && movie.packaging !== 'Steelbook') return false;
         if (specialFilters.slipcover && !movie.hasSlipcover) return false;
-        if (searchVal) return movie.title.toLowerCase().includes(searchVal);
+        if (searchVal) {
+          return movie.title.toLowerCase().includes(searchVal) ||
+                 (movie.director || '').toLowerCase().includes(searchVal) ||
+                 (movie.studio || '').toLowerCase().includes(searchVal);
+        }
         return true;
       });
 
@@ -338,7 +342,10 @@
               <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">${m.format}</span>
             </div>
             <div class="p-2.5 flex-1 flex flex-col justify-between">
-              <h4 class="font-bold text-xs text-white line-clamp-1">${m.title}</h4>
+              <div>
+                <h4 class="font-bold text-xs text-white line-clamp-1">${m.title}</h4>
+                <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${m.director || 'Unknown Director'}</p>
+              </div>
               <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/50 text-slate-400 text-xs">
                 <button onclick="editMovie('${m.id}')"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteMovie('${m.id}')"><i class="fa-solid fa-trash"></i></button>
@@ -347,6 +354,38 @@
           `;
           grid.appendChild(card);
         });
+      }
+    }
+
+    // Fetch detailed info (Director, Studio) using the TMDB movie ID
+    async function fetchAndFillMovieDetails(movieId) {
+      const apiKey = localStorage.getItem('tmdb_api_key');
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&append_to_response=credits`);
+        const data = await res.json();
+
+        if (data) {
+          document.getElementById('form-title').value = data.title || '';
+          
+          if (data.poster_path) {
+            document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+          }
+
+          // Extract Director from crew
+          if (data.credits && data.credits.crew) {
+            const directorObj = data.credits.crew.find(person => person.job === 'Director');
+            if (directorObj) {
+              document.getElementById('form-director').value = directorObj.name;
+            }
+          }
+
+          // Extract Studio / Production Company
+          if (data.production_companies && data.production_companies.length > 0) {
+            document.getElementById('form-studio').value = data.production_companies[0].name;
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching detailed TMDB data:", err);
       }
     }
 
@@ -369,10 +408,7 @@
 
           if (tmdbData.results && tmdbData.results.length > 0) {
             const bestMatch = tmdbData.results[0];
-            document.getElementById('form-title').value = bestMatch.title;
-            if (bestMatch.poster_path) {
-              document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${bestMatch.poster_path}`;
-            }
+            await fetchAndFillMovieDetails(bestMatch.id);
             return;
           }
           document.getElementById('form-title').value = cleanedTitle;
@@ -428,12 +464,11 @@
         resultsDiv.classList.remove('hidden');
         data.results.slice(0, 4).forEach(movie => {
           const row = document.createElement('div');
-          row.className = "p-1.5 hover:bg-slate-700 cursor-pointer flex justify-between rounded";
+          row.className = "p-1.5 hover:bg-slate-700 cursor-pointer flex justify-between rounded text-slate-200";
           row.innerHTML = `<span>${movie.title} (${(movie.release_date || '').slice(0,4)})</span>`;
-          row.onclick = () => {
-            document.getElementById('form-title').value = movie.title;
-            if (movie.poster_path) document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+          row.onclick = async () => {
             resultsDiv.classList.add('hidden');
+            await fetchAndFillMovieDetails(movie.id);
           };
           resultsDiv.appendChild(row);
         });
@@ -444,12 +479,35 @@
       document.getElementById('modal-title').innerText = "Add Physical Edition";
       document.getElementById('form-id').value = '';
       document.getElementById('form-title').value = '';
+      document.getElementById('form-director').value = '';
+      document.getElementById('form-studio').value = '';
       document.getElementById('form-poster').value = '';
       document.getElementById('form-upc').value = '';
       document.getElementById('movie-modal').classList.remove('hidden');
     }
 
     function closeModal() { document.getElementById('movie-modal').classList.add('hidden'); }
+
+    function editMovie(id) {
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById('modal-title').innerText = "Edit Physical Edition";
+      document.getElementById('form-id').value = m.id;
+      document.getElementById('form-title').value = m.title;
+      document.getElementById('form-format').value = m.format;
+      document.getElementById('form-packaging').value = m.packaging;
+      document.getElementById('form-director').value = m.director || '';
+      document.getElementById('form-studio').value = m.studio || '';
+      document.getElementById('form-hdr').value = m.hdrType || 'None/SDR';
+      document.getElementById('form-audio').value = m.audioFormat || '';
+      document.getElementById('form-slipcover').checked = m.hasSlipcover || false;
+      document.getElementById('form-has4k').checked = m.has4kUpgrade || false;
+      document.getElementById('form-upc').value = m.upc || '';
+      document.getElementById('form-poster').value = m.poster || '';
+
+      document.getElementById('movie-modal').classList.remove('hidden');
+    }
 
     function saveMovieForm() {
       const id = document.getElementById('form-id').value;
@@ -491,6 +549,34 @@
 
     function updateStats() {
       document.getElementById('stats-summary').innerText = `${collection.length} Physical Editions`;
+    }
+
+    function setFormatFilter(fmt) {
+      currentFormatFilter = fmt;
+      document.querySelectorAll('.filter-fmt-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      document.getElementById(`filter-fmt-${fmt}`).classList.add('bg-amber-500', 'text-slate-950');
+      document.getElementById(`filter-fmt-${fmt}`).classList.remove('bg-slate-800', 'text-slate-300');
+      renderCatalog();
+    }
+
+    function toggleSpecialFilter(type) {
+      specialFilters[type] = !specialFilters[type];
+      const btn = document.getElementById(`filter-${type}`);
+      if (specialFilters[type]) {
+        btn.classList.add('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
+      } else {
+        btn.classList.remove('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
+      }
+      renderCatalog();
+    }
+
+    function filterCatalog() { renderCatalog(); }
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      renderCatalog();
     }
 
     function openSettingsModal() { document.getElementById('settings-modal').classList.remove('hidden'); }
