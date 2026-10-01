@@ -2,130 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Physical Media Catalog</title>
-  <!-- Tailwind CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FilmVault">
+  <title>FilmVault — Physical Media Catalog</title>
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html5-qrcode for live webcam/camera barcode scanning -->
+  <!-- html5-qrcode for camera UPC scanning -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
   <style>
+    :root {
+      --sat: env(safe-area-inset-top);
+      --sab: env(safe-area-inset-bottom);
+    }
     body {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      background-color: #0f172a;
-      color: #f8fafc;
+      background-color: #090d16;
+      color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
     }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Custom Glow and Badge Styles */
+    .boutique-criterion { background-color: #111111; color: #ffffff; border: 1px solid #444444; }
+    .boutique-arrow { background-color: #3b0764; color: #f3e8ff; border: 1px solid #7e22ce; }
+    .boutique-vinegar { background-color: #831843; color: #fce7f3; border: 1px solid #db2777; }
+    .boutique-shout { background-color: #1e3a8a; color: #dbeafe; border: 1px solid #2563eb; }
+    .boutique-kino { background-color: #701a75; color: #fdf4ff; border: 1px solid #c026d3; }
+    .boutique-severin { background-color: #450a0a; color: #fee2e2; border: 1px solid #dc2626; }
+    .boutique-generic { background-color: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+
+    .aspect-poster { aspect-ratio: 2 / 3; }
   </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden text-slate-100">
+<body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased">
 
   <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between z-10 shrink-0">
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between z-20 shrink-0">
     <div class="flex items-center space-x-3">
-      <div class="bg-gradient-to-tr from-amber-500 to-red-600 p-2 rounded-xl text-white shadow-lg">
-        <i class="fa-solid fa-compact-disc text-lg"></i>
+      <div class="bg-gradient-to-br from-amber-400 to-amber-600 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-amber-500/10">
+        <i class="fa-solid fa-compact-disc text-xl"></i>
       </div>
       <div>
-        <h1 class="font-bold text-lg tracking-wide text-white leading-none">FilmVault</h1>
-        <p class="text-xs text-slate-400 mt-0.5" id="stats-summary">0 Physical Editions</p>
+        <h1 class="font-black text-lg tracking-wider text-white leading-none">FILM<span class="text-amber-500">VAULT</span></h1>
+        <p class="text-[11px] font-medium text-slate-400 mt-0.5" id="stats-summary">0 Physical Editions</p>
       </div>
     </div>
     <div class="flex items-center space-x-2">
-      <button onclick="openSettingsModal()" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">
-        <i class="fa-solid fa-gear"></i>
+      <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors">
+        <i class="fa-solid fa-sliders"></i>
       </button>
-      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-sm flex items-center shadow-md">
-        <i class="fa-solid fa-plus mr-1.5"></i> Add
+      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/20 active:scale-95 transition-all">
+        <i class="fa-solid fa-plus mr-1.5"></i> Add Film
       </button>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
-  <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-2 flex justify-around text-xs font-semibold text-slate-400 shrink-0">
-    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-2.5 px-3 border-b-2 border-amber-500 text-amber-500 flex items-center space-x-1.5">
+  <!-- Navigation Bar -->
+  <nav class="bg-slate-900/70 backdrop-blur-md border-b border-slate-800/80 px-2 flex justify-around text-xs font-semibold text-slate-400 shrink-0 z-10">
+    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-3 px-3 border-b-2 border-amber-500 text-amber-400 flex items-center space-x-1.5 transition-all">
       <i class="fa-solid fa-film text-sm"></i>
       <span>Collection</span>
     </button>
-    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5">
+    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 transition-all">
       <i class="fa-solid fa-barcode text-sm"></i>
-      <span>Scanner</span>
+      <span>Scan UPC</span>
     </button>
-    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 relative">
+    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 relative transition-all">
       <i class="fa-solid fa-arrow-up-right-dots text-sm"></i>
       <span>4K Upgrades</span>
-      <span id="upgrade-badge" class="hidden absolute top-1 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+      <span id="upgrade-badge" class="hidden absolute top-2 right-0 bg-amber-500 text-slate-950 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black">0</span>
     </button>
-    <button onclick="switchTab('recs')" id="tab-btn-recs" class="py-2.5 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5">
-      <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
-      <span>For You</span>
+    <button onclick="switchTab('stats')" id="tab-btn-stats" class="py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-1.5 transition-all">
+      <i class="fa-solid fa-chart-pie text-sm"></i>
+      <span>Vault Stats</span>
     </button>
   </nav>
 
-  <!-- Main Area -->
+  <!-- Main Container -->
   <main class="flex-1 overflow-y-auto hide-scrollbar p-4 relative" id="main-container">
     
     <!-- CATALOG TAB -->
-    <section id="tab-catalog" class="space-y-4">
-      <div class="space-y-2">
-        <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
-          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, studios..." 
-                 class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-9 pr-8 py-2 text-sm focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-400">
-          <button onclick="clearSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white hidden" id="clear-search-btn">
+    <section id="tab-catalog" class="space-y-4 pb-12">
+      <!-- Search & Filters -->
+      <div class="space-y-2.5">
+        <div class="relative flex items-center">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search title, director, studio, label, notes..." 
+                 class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl pl-10 pr-9 py-2.5 text-sm focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-400 shadow-inner">
+          <button onclick="clearSearch()" class="absolute right-3 text-slate-400 hover:text-white hidden" id="clear-search-btn">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
+        <!-- Filter Chips Row 1: Formats & Packaging -->
         <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-1">
-          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3 py-1 rounded-full text-xs font-bold shrink-0">All</button>
-          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">4K UHD</button>
-          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">Blu-ray</button>
-          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">DVD</button>
-          <button onclick="toggleSpecialFilter('steelbook')" id="filter-steelbook" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">Steelbooks</button>
-          <button onclick="toggleSpecialFilter('slipcover')" id="filter-slipcover" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold shrink-0">Slipcovers</button>
+          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3.5 py-1 rounded-full text-xs font-bold shrink-0 shadow-sm">All Formats</button>
+          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-medium shrink-0">4K UHD</button>
+          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-medium shrink-0">Blu-ray</button>
+          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-medium shrink-0">DVD</button>
+          <div class="w-px h-4 bg-slate-800 shrink-0 mx-1"></div>
+          <button onclick="toggleSpecialFilter('steelbook')" id="filter-steelbook" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-medium shrink-0">Steelbooks</button>
+          <button onclick="toggleSpecialFilter('slipcover')" id="filter-slipcover" class="bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full text-xs font-medium shrink-0">Slipcovers</button>
+        </div>
+
+        <!-- Filter Chips Row 2: Sort & Boutiques -->
+        <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-0.5 text-xs">
+          <span class="text-slate-500 text-[11px] font-semibold uppercase tracking-wider shrink-0 mr-1">Sort:</span>
+          <select id="sort-select" onchange="filterCatalog()" class="bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:outline-none focus:border-amber-500">
+            <option value="dateAddedDesc">Date Added (Newest)</option>
+            <option value="dateAddedAsc">Date Added (Oldest)</option>
+            <option value="titleAsc">Title (A-Z)</option>
+            <option value="yearDesc">Release Year (Newest)</option>
+            <option value="ratingDesc">User Rating (Highest)</option>
+          </select>
+
+          <span class="text-slate-500 text-[11px] font-semibold uppercase tracking-wider shrink-0 ml-2 mr-1">Label:</span>
+          <select id="label-filter-select" onchange="filterCatalog()" class="bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:outline-none focus:border-amber-500">
+            <option value="ALL">All Publishers / Labels</option>
+            <option value="Criterion Collection">Criterion Collection</option>
+            <option value="Arrow Video">Arrow Video</option>
+            <option value="Vinegar Syndrome">Vinegar Syndrome</option>
+            <option value="Shout! Factory">Shout! / Scream Factory</option>
+            <option value="Kino Lorber">Kino Lorber</option>
+            <option value="Severin Films">Severin Films</option>
+          </select>
         </div>
       </div>
 
-      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+      <!-- Collection Poster Grid -->
+      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 pt-1"></div>
 
-      <div id="empty-catalog" class="hidden text-center py-12 space-y-3">
-        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-500 text-2xl">
+      <!-- Empty Catalog Placeholder -->
+      <div id="empty-catalog" class="hidden text-center py-16 space-y-4">
+        <div class="w-16 h-16 bg-slate-800/80 border border-slate-700/60 rounded-2xl flex items-center justify-center mx-auto text-slate-500 text-2xl">
           <i class="fa-solid fa-film"></i>
         </div>
-        <h3 class="text-slate-300 font-semibold text-base">No movies found</h3>
+        <div>
+          <h3 class="text-slate-200 font-bold text-base">No films found in your Vault</h3>
+          <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">Scan a barcode, search TMDB, or import your Libib CSV library in Settings.</p>
+        </div>
+        <button onclick="openImportModal()" class="inline-flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 font-semibold px-4 py-2 rounded-xl text-xs">
+          <i class="fa-solid fa-file-csv"></i>
+          <span>Import Libib CSV</span>
+        </button>
       </div>
     </section>
 
     <!-- SCANNER TAB -->
-    <section id="tab-scanner" class="hidden space-y-4">
-      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 text-center space-y-3">
-        <h2 class="font-bold text-base text-white">UPC Barcode Camera Scanner</h2>
-        <p class="text-xs text-slate-400">Position the barcode of your DVD, Blu-ray, or 4K UHD box inside the frame.</p>
+    <section id="tab-scanner" class="hidden space-y-4 pb-12">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-3 shadow-xl">
+        <div class="flex items-center justify-center space-x-2 text-amber-400 font-bold text-sm">
+          <i class="fa-solid fa-barcode"></i>
+          <span>UPC Camera Scanner</span>
+        </div>
+        <p class="text-xs text-slate-400">Hold your physical disc case barcode in front of the camera to lookup details automatically.</p>
         
-        <div id="reader" class="overflow-hidden rounded-xl bg-black border border-slate-700 min-h-[220px] flex items-center justify-center relative">
-          <span class="text-slate-500 text-xs p-4">Camera inactive. Tap "Start Camera" below to scan.</span>
+        <div id="reader" class="overflow-hidden rounded-xl bg-black/60 border border-slate-800 min-h-[220px] flex items-center justify-center relative shadow-inner">
+          <span class="text-slate-500 text-xs p-4">Camera inactive. Tap "Start Camera Scanner" below.</span>
         </div>
 
         <div class="flex justify-center space-x-3 pt-2">
-          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center">
-            <i class="fa-solid fa-camera mr-1.5"></i> Start Camera
+          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center shadow-md active:scale-95 transition-all">
+            <i class="fa-solid fa-camera mr-2"></i> Start Camera Scanner
           </button>
-          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center">
-            <i class="fa-solid fa-stop mr-1.5"></i> Stop Camera
+          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center transition-all">
+            <i class="fa-solid fa-stop mr-2"></i> Stop Camera
           </button>
         </div>
       </div>
 
-      <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Handheld / Bluetooth / Manual UPC Input</h3>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center">
+          <i class="fa-solid fa-keyboard mr-2 text-amber-500"></i> Manual Barcode / UPC Input
+        </h3>
         <div class="flex space-x-2">
-          <input type="text" id="manual-upc-input" placeholder="Type 12-digit UPC code..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
-          <button onclick="handleManualUpcSubmit()" class="bg-slate-700 hover:bg-slate-600 font-semibold px-4 py-2 rounded-xl text-xs text-white">
+          <input type="text" id="manual-upc-input" placeholder="Type 12-digit UPC code..." class="flex-1 bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 text-white">
+          <button onclick="handleManualUpcSubmit()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs text-slate-200">
             Lookup
           </button>
         </div>
@@ -133,33 +195,154 @@
     </section>
 
     <!-- UPGRADES TAB -->
-    <section id="tab-upgrades" class="hidden space-y-4">
-      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+    <section id="tab-upgrades" class="hidden space-y-4 pb-12">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <h2 class="font-bold text-base text-amber-400 flex items-center">
-          <i class="fa-solid fa-sparkles mr-2"></i> Smart 4K UHD Upgrade Finder
+          <i class="fa-solid fa-sparkles mr-2"></i> 4K Transfer Upgrade Finder
         </h2>
-        <p class="text-xs text-slate-400 mt-1">DVDs or Blu-rays in your collection where a 4K UHD transfer exists.</p>
+        <p class="text-xs text-slate-400 mt-1">Blu-rays or DVDs in your collection where a 4K UHD release exists or was flagged.</p>
       </div>
       <div id="upgrades-list" class="space-y-3"></div>
     </section>
 
-    <!-- RECOMMENDATIONS TAB -->
-    <section id="tab-recs" class="hidden space-y-4">
-      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+    <!-- STATS TAB -->
+    <section id="tab-stats" class="hidden space-y-4 pb-12">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <h2 class="font-bold text-base text-amber-400 flex items-center">
-          <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Recommendations
+          <i class="fa-solid fa-chart-pie mr-2"></i> Vault Breakdown
         </h2>
-        <p class="text-xs text-slate-400 mt-1">Suggested physical additions based on directors and genres in your library.</p>
+        <p class="text-xs text-slate-400 mt-1">Overview of your physical media shelf demographics.</p>
       </div>
-      <div id="recs-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Editions</p>
+          <p class="text-2xl font-black text-amber-400 mt-1" id="stat-total-count">0</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Steelbooks</p>
+          <p class="text-2xl font-black text-slate-100 mt-1" id="stat-steelbook-count">0</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Slipcovers</p>
+          <p class="text-2xl font-black text-slate-100 mt-1" id="stat-slip-count">0</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Boutique Releases</p>
+          <p class="text-2xl font-black text-purple-400 mt-1" id="stat-boutique-count">0</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Format Distribution</h3>
+        <div id="stats-format-bars" class="space-y-2"></div>
+      </div>
     </section>
 
   </main>
 
-  <!-- ADD / EDIT MOVIE MODAL -->
+  <!-- FILM DETAIL MODAL (With Trailer Player & Collector Info) -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl relative">
+      
+      <!-- Close Button -->
+      <button onclick="closeDetailModal()" class="absolute top-3 right-3 z-30 bg-slate-950/80 hover:bg-slate-900 text-slate-200 p-2 rounded-full w-9 h-9 flex items-center justify-center border border-slate-700">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="overflow-y-auto hide-scrollbar flex-1">
+        <!-- Backdrop Banner & Poster Header -->
+        <div class="relative w-full h-48 sm:h-56 bg-slate-950">
+          <img id="detail-backdrop" src="" class="w-full h-full object-cover opacity-35 filter blur-sm">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+          
+          <div class="absolute bottom-3 left-4 right-4 flex items-end space-x-3.5 z-10">
+            <img id="detail-poster" src="" class="w-24 h-36 sm:w-28 sm:h-42 object-cover rounded-xl border border-slate-700 shadow-2xl shrink-0">
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                <span id="detail-format-badge" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">4K UHD</span>
+                <span id="detail-boutique-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded boutique-generic">Criterion</span>
+                <span id="detail-packaging-badge" class="bg-slate-800 text-slate-300 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-700">Steelbook</span>
+              </div>
+              <h2 id="detail-title" class="font-black text-lg sm:text-xl text-white leading-tight line-clamp-2">Movie Title</h2>
+              <p id="detail-subhead" class="text-xs text-slate-300 font-medium line-clamp-1">1999 • Director Name</p>
+              
+              <!-- Owned Days Pill -->
+              <div class="inline-flex items-center space-x-1.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 px-2.5 py-1 rounded-full text-[11px] font-semibold mt-1">
+                <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+                <span id="detail-owned-days">Owned for 0 days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Body Content -->
+        <div class="p-4 sm:p-5 space-y-5 text-xs">
+          
+          <!-- Trailer Button & Synopsis -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Synopsis</h3>
+              <button onclick="playTrailer()" id="detail-trailer-btn" class="bg-red-600 hover:bg-red-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 shadow-md">
+                <i class="fa-solid fa-play text-xs"></i>
+                <span>Watch Trailer</span>
+              </button>
+            </div>
+            <p id="detail-overview" class="text-slate-300 leading-relaxed">No synopsis available for this title.</p>
+          </div>
+
+          <!-- Collector Tech Specs Grid -->
+          <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5 space-y-2.5">
+            <h3 class="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center">
+              <i class="fa-solid fa-sliders mr-1.5"></i> Physical Media Specifications
+            </h3>
+            <div class="grid grid-cols-2 gap-2.5 text-slate-300">
+              <div><span class="text-slate-500 font-medium">Publisher / Studio:</span> <span id="detail-studio" class="font-semibold text-white">Universal</span></div>
+              <div><span class="text-slate-500 font-medium">Boutique Label:</span> <span id="detail-label" class="font-semibold text-white">None</span></div>
+              <div><span class="text-slate-500 font-medium">HDR Standard:</span> <span id="detail-hdr" class="font-semibold text-white">HDR10</span></div>
+              <div><span class="text-slate-500 font-medium">Audio Mix:</span> <span id="detail-audio" class="font-semibold text-white">Dolby Atmos</span></div>
+              <div><span class="text-slate-500 font-medium">Slipcover:</span> <span id="detail-has-slip" class="font-semibold text-white">No</span></div>
+              <div><span class="text-slate-500 font-medium">Date Added:</span> <span id="detail-added-date" class="font-semibold text-white">Oct 12, 2024</span></div>
+              <div><span class="text-slate-500 font-medium">UPC Barcode:</span> <span id="detail-upc" class="font-mono text-slate-300">1234567890</span></div>
+              <div><span class="text-slate-500 font-medium">4K Master Exists:</span> <span id="detail-4k-exists" class="font-semibold text-white">Yes</span></div>
+            </div>
+          </div>
+
+          <!-- Personal Notes & Tags -->
+          <div class="space-y-1.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Collector Notes</h3>
+            <p id="detail-notes" class="bg-slate-800/50 border border-slate-800 rounded-xl p-3 text-slate-300 italic">No notes added.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="p-3 border-t border-slate-800 bg-slate-900/90 flex justify-between items-center">
+        <button onclick="deleteMovieFromDetail()" class="text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center">
+          <i class="fa-solid fa-trash mr-1.5"></i> Delete
+        </button>
+        <button onclick="editMovieFromDetail()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center">
+          <i class="fa-solid fa-pen mr-1.5"></i> Edit Edition
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAILER PLAYER MODAL -->
+  <div id="trailer-modal" class="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-3 hidden">
+    <div class="w-full max-w-3xl aspect-video bg-black rounded-2xl overflow-hidden relative border border-slate-800 shadow-2xl">
+      <button onclick="closeTrailerModal()" class="absolute top-3 right-3 z-20 bg-slate-900/90 text-white w-9 h-9 rounded-full flex items-center justify-center border border-slate-700">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <iframe id="trailer-iframe" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MOVIE FORM MODAL -->
   <div id="movie-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-      <div class="px-5 py-3 border-b border-slate-800 flex justify-between items-center">
+      <div class="px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
         <h3 id="modal-title" class="font-bold text-base text-white">Add Physical Edition</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -168,9 +351,9 @@
 
       <div class="p-5 overflow-y-auto space-y-4 flex-1 hide-scrollbar">
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Movie Title *</label>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Film Title *</label>
           <div class="flex space-x-2">
-            <input type="text" id="form-title" placeholder="e.g. Oppenheimer" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <input type="text" id="form-title" placeholder="e.g. Alien" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
             <button onclick="searchTMDBForTitle()" class="bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs">Search TMDB</button>
           </div>
           <div id="tmdb-results" class="hidden mt-2 bg-slate-800 border border-slate-700 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
@@ -183,6 +366,8 @@
               <option value="4K UHD">4K UHD</option>
               <option value="Blu-ray">Blu-ray</option>
               <option value="DVD">DVD</option>
+              <option value="VHS">VHS</option>
+              <option value="LaserDisc">LaserDisc</option>
             </select>
           </div>
           <div>
@@ -190,7 +375,8 @@
             <select id="form-packaging" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
               <option value="Standard Case">Standard Case</option>
               <option value="Steelbook">Steelbook</option>
-              <option value="Digibook">Digibook / Box Set</option>
+              <option value="Digibook / Box Set">Digibook / Box Set</option>
+              <option value="Slipcover Case">Slipcover Case</option>
             </select>
           </div>
         </div>
@@ -201,8 +387,18 @@
             <input type="text" id="form-director" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Studio / Label</label>
-            <input type="text" id="form-studio" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Boutique Label</label>
+            <select id="form-label" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+              <option value="None">None (Major Studio)</option>
+              <option value="Criterion Collection">Criterion Collection</option>
+              <option value="Arrow Video">Arrow Video</option>
+              <option value="Vinegar Syndrome">Vinegar Syndrome</option>
+              <option value="Shout! Factory">Shout! / Scream Factory</option>
+              <option value="Kino Lorber">Kino Lorber</option>
+              <option value="Severin Films">Severin Films</option>
+              <option value="Blue Underground">Blue Underground</option>
+              <option value="Warner Archive">Warner Archive</option>
+            </select>
           </div>
         </div>
 
@@ -218,7 +414,18 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Audio Format</label>
-            <input type="text" id="form-audio" placeholder="Dolby Atmos" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+            <input type="text" id="form-audio" placeholder="Dolby Atmos / Mono" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Acquisition Date ("Added On")</label>
+            <input type="date" id="form-added-date" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Studio / Distributor</label>
+            <input type="text" id="form-studio" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
@@ -229,8 +436,13 @@
           </label>
           <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
             <input type="checkbox" id="form-has4k" class="accent-amber-500 rounded w-4 h-4">
-            <span>4K Transfer Exists</span>
+            <span>4K Master Exists</span>
           </label>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Notes / Special Features</label>
+          <textarea id="form-notes" rows="2" placeholder="e.g. Scanned 4K restoration, disc 2 special features..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -245,20 +457,51 @@
         </div>
 
         <input type="hidden" id="form-id">
+        <input type="hidden" id="form-tmdb-id">
+        <input type="hidden" id="form-backdrop">
+        <input type="hidden" id="form-overview">
+        <input type="hidden" id="form-year">
       </div>
 
       <div class="p-4 border-t border-slate-800 flex space-x-2 justify-end">
         <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancel</button>
-        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold">Save Movie</button>
+        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold">Save Film Edition</button>
       </div>
+    </div>
+  </div>
+
+  <!-- LIBIB CSV IMPORT MODAL -->
+  <div id="import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-white flex items-center">
+          <i class="fa-solid fa-file-csv mr-2 text-amber-500"></i> Import Libib CSV Export
+        </h3>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Export your movie library CSV from <strong>Libib.com</strong> or your movie catalog app and select it below to import titles, directors, formats, studios, and notes directly into FilmVault.
+      </p>
+
+      <div class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center space-y-2 hover:border-amber-500/50 transition-colors">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-amber-500"></i>
+        <div class="text-xs text-slate-300 font-medium">Click to choose Libib CSV file</div>
+        <input type="file" id="csv-file-input" accept=".csv" class="hidden" onchange="processCsvUpload(event)">
+        <button onclick="document.getElementById('csv-file-input').click()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold">Select CSV File</button>
+      </div>
+
+      <div id="import-status" class="hidden text-xs text-amber-400 font-medium text-center">Parsing CSV data...</div>
     </div>
   </div>
 
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-white">App Settings</h3>
+        <h3 class="font-bold text-base text-white">Vault Settings & Backup</h3>
         <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
@@ -267,8 +510,24 @@
       <div class="space-y-3 text-xs">
         <div>
           <label class="block font-semibold text-slate-300 mb-1">TMDB API Key</label>
-          <input type="text" id="tmdb-api-key-input" placeholder="Paste TMDB API Key here..." 
-                 class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="tmdb-api-key-input" placeholder="Paste TMDB API Key..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="pt-2 space-y-2 border-t border-slate-800">
+          <h4 class="font-bold text-slate-300">Data Management</h4>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="openImportModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold p-2.5 rounded-xl flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-file-csv text-amber-500"></i>
+              <span>Import Libib CSV</span>
+            </button>
+            <button onclick="exportToJson()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold p-2.5 rounded-xl flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-download text-amber-500"></i>
+              <span>Backup JSON</span>
+            </button>
+          </div>
+          <button onclick="clearAllData()" class="w-full bg-red-950/40 border border-red-800/60 hover:bg-red-900/60 text-red-300 font-semibold p-2.5 rounded-xl text-xs transition-colors">
+            Clear Entire Local Library
+          </button>
         </div>
       </div>
 
@@ -279,15 +538,67 @@
   </div>
 
   <script>
+    // State management
     let collection = [];
     let currentFormatFilter = 'ALL';
     let specialFilters = { steelbook: false, slipcover: false };
+    let activeDetailId = null;
     let html5QrcodeScanner = null;
+
+    // Default sample library if storage is completely empty
+    const presetDummyData = [
+      {
+        id: "m_1700000001",
+        title: "Hellraiser",
+        year: "1987",
+        format: "4K UHD",
+        packaging: "Steelbook",
+        director: "Clive Barker",
+        studio: "Arrow Video",
+        label: "Arrow Video",
+        hdrType: "Dolby Vision",
+        audioFormat: "DTS-HD MA 5.1",
+        hasSlipcover: true,
+        has4kUpgrade: true,
+        dateAdded: "2024-01-15",
+        upc: "0760137138724",
+        poster: "https://image.tmdb.org/t/p/w500/1pP39xL82W3xstGme9e9jD4C1E1.jpg",
+        backdrop: "https://image.tmdb.org/t/p/w1280/8I4iK5I7YtXQG9tUjQ6Z2.jpg",
+        overview: "An unfaithful wife encounters the zombified body of her dead lover who is being pursued by horrific, extra-dimensional beings after he escapes their sadomasochistic underworld.",
+        notes: "Arrow Video Limited Edition 4K restoration.",
+        tmdbId: "9003"
+      },
+      {
+        id: "m_1700000002",
+        title: "Mulholland Drive",
+        year: "2001",
+        format: "4K UHD",
+        packaging: "Digibook / Box Set",
+        director: "David Lynch",
+        studio: "Universal",
+        label: "Criterion Collection",
+        hdrType: "Dolby Vision",
+        audioFormat: "DTS-HD MA 5.1",
+        hasSlipcover: false,
+        has4kUpgrade: true,
+        dateAdded: "2023-11-20",
+        upc: "0715515266114",
+        poster: "https://image.tmdb.org/t/p/w500/oBxS32m7CAt8ipJ4L41OQnQ8e3V.jpg",
+        overview: "After a car wreck on Mulholland Drive renders a woman amnesiac, she and a hopeful Hollywood newcomer search for answers in a weird dream-like Los Angeles.",
+        notes: "Criterion Collection release spine #1101.",
+        tmdbId: "101"
+      }
+    ];
 
     function initApp() {
       const stored = localStorage.getItem('filmvault_collection');
-      collection = stored ? JSON.parse(stored) : [];
-      
+      if (stored) {
+        try { collection = JSON.parse(stored); } catch (e) { collection = presetDummyData; }
+      } else {
+        collection = presetDummyData;
+        saveCollection();
+      }
+
       const apiKey = localStorage.getItem('tmdb_api_key') || 'c39eb4fc46bd4f2d927ab5dec87299ea';
       localStorage.setItem('tmdb_api_key', apiKey);
       document.getElementById('tmdb-api-key-input').value = apiKey;
@@ -301,54 +612,86 @@
       updateStats();
     }
 
-    function switchTab(tab) {
-      ['catalog', 'scanner', 'upgrades', 'recs'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-500');
-        document.getElementById(`tab-btn-${t}`).classList.add('border-transparent');
-      });
-      document.getElementById(`tab-${tab}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-500');
-      if (tab !== 'scanner' && html5QrcodeScanner) stopCameraScanner();
+    function calculateDaysOwned(addedDateStr) {
+      if (!addedDateStr) return "Recently added";
+      const added = new Date(addedDateStr);
+      const now = new Date();
+      const diffTime = Math.abs(now - added);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays === 0 ? "Added today" : `Owned for ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+    }
+
+    function getBoutiqueBadgeClass(label) {
+      if (!label || label === 'None') return 'hidden';
+      if (label.includes('Criterion')) return 'boutique-criterion inline-block';
+      if (label.includes('Arrow')) return 'boutique-arrow inline-block';
+      if (label.includes('Vinegar')) return 'boutique-vinegar inline-block';
+      if (label.includes('Shout') || label.includes('Scream')) return 'boutique-shout inline-block';
+      if (label.includes('Kino')) return 'boutique-kino inline-block';
+      if (label.includes('Severin')) return 'boutique-severin inline-block';
+      return 'boutique-generic inline-block';
     }
 
     function renderCatalog() {
       const grid = document.getElementById('catalog-grid');
       const emptyState = document.getElementById('empty-catalog');
       const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+      const sortVal = document.getElementById('sort-select').value;
+      const labelVal = document.getElementById('label-filter-select').value;
+
       grid.innerHTML = '';
 
-      const filtered = collection.filter(movie => {
+      let filtered = collection.filter(movie => {
         if (currentFormatFilter !== 'ALL' && movie.format !== currentFormatFilter) return false;
         if (specialFilters.steelbook && movie.packaging !== 'Steelbook') return false;
         if (specialFilters.slipcover && !movie.hasSlipcover) return false;
+        if (labelVal !== 'ALL' && movie.label !== labelVal) return false;
+
         if (searchVal) {
           return movie.title.toLowerCase().includes(searchVal) ||
                  (movie.director || '').toLowerCase().includes(searchVal) ||
-                 (movie.studio || '').toLowerCase().includes(searchVal);
+                 (movie.studio || '').toLowerCase().includes(searchVal) ||
+                 (movie.label || '').toLowerCase().includes(searchVal) ||
+                 (movie.notes || '').toLowerCase().includes(searchVal);
         }
         return true;
+      });
+
+      // Sorting
+      filtered.sort((a, b) => {
+        if (sortVal === 'dateAddedDesc') return new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0);
+        if (sortVal === 'dateAddedAsc') return new Date(a.dateAdded || 0) - new Date(b.dateAdded || 0);
+        if (sortVal === 'titleAsc') return a.title.localeCompare(b.title);
+        if (sortVal === 'yearDesc') return (parseInt(b.year) || 0) - (parseInt(a.year) || 0);
+        return 0;
       });
 
       if (filtered.length === 0) emptyState.classList.remove('hidden');
       else {
         emptyState.classList.add('hidden');
         filtered.forEach(m => {
+          const boutiqueClass = getBoutiqueBadgeClass(m.label);
           const card = document.createElement('div');
-          card.className = "bg-slate-800 border border-slate-700/80 rounded-xl overflow-hidden flex flex-col group relative shadow-md";
+          card.className = "bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col group relative shadow-md hover:border-slate-700 transition-all cursor-pointer active:scale-98";
+          card.onclick = () => openDetailModal(m.id);
+
           card.innerHTML = `
-            <div class="relative aspect-[2/3] w-full bg-slate-900 overflow-hidden">
-              <img src="${m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster'}" class="w-full h-full object-cover">
-              <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">${m.format}</span>
-            </div>
-            <div class="p-2.5 flex-1 flex flex-col justify-between">
-              <div>
-                <h4 class="font-bold text-xs text-white line-clamp-1">${m.title}</h4>
-                <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${m.director || 'Unknown Director'}</p>
+            <div class="relative aspect-poster w-full bg-slate-950 overflow-hidden">
+              <img src="${m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                <span class="bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-1.5 py-0.5 rounded shadow">${m.format}</span>
+                ${m.label && m.label !== 'None' ? `<span class="text-[8px] font-bold px-1.5 py-0.5 rounded shadow ${boutiqueClass}">${m.label}</span>` : ''}
               </div>
-              <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/50 text-slate-400 text-xs">
-                <button onclick="editMovie('${m.id}')"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteMovie('${m.id}')"><i class="fa-solid fa-trash"></i></button>
+              ${m.packaging === 'Steelbook' ? `<span class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur-md text-amber-400 border border-amber-500/40 text-[9px] px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-box-archive mr-1"></i>Steelbook</span>` : ''}
+            </div>
+            <div class="p-2.5 flex-1 flex flex-col justify-between space-y-1">
+              <div>
+                <h4 class="font-bold text-xs text-slate-100 line-clamp-1 group-hover:text-amber-400 transition-colors">${m.title}</h4>
+                <p class="text-[10px] text-slate-400 line-clamp-1">${m.year || ''} • ${m.director || 'Unknown'}</p>
+              </div>
+              <div class="text-[10px] text-amber-500/80 font-medium pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                <span>${calculateDaysOwned(m.dateAdded)}</span>
+                <i class="fa-solid fa-chevron-right text-[8px] text-slate-600"></i>
               </div>
             </div>
           `;
@@ -357,42 +700,39 @@
       }
     }
 
-    // Fetch detailed info (Director, Studio) using the TMDB movie ID
     async function fetchAndFillMovieDetails(movieId) {
       const apiKey = localStorage.getItem('tmdb_api_key');
       try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&append_to_response=credits`);
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&append_to_response=credits,videos`);
         const data = await res.json();
 
         if (data) {
           document.getElementById('form-title').value = data.title || '';
+          document.getElementById('form-tmdb-id').value = data.id || '';
+          document.getElementById('form-overview').value = data.overview || '';
+          document.getElementById('form-year').value = (data.release_date || '').slice(0, 4);
           
-          if (data.poster_path) {
-            document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
-          }
+          if (data.poster_path) document.getElementById('form-poster').value = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+          if (data.backdrop_path) document.getElementById('form-backdrop').value = `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`;
 
-          // Extract Director from crew
           if (data.credits && data.credits.crew) {
-            const directorObj = data.credits.crew.find(person => person.job === 'Director');
-            if (directorObj) {
-              document.getElementById('form-director').value = directorObj.name;
-            }
+            const directorObj = data.credits.crew.find(p => p.job === 'Director');
+            if (directorObj) document.getElementById('form-director').value = directorObj.name;
           }
 
-          // Extract Studio / Production Company
           if (data.production_companies && data.production_companies.length > 0) {
             document.getElementById('form-studio').value = data.production_companies[0].name;
           }
         }
       } catch (err) {
-        console.error("Error fetching detailed TMDB data:", err);
+        console.error("TMDB error:", err);
       }
     }
 
     async function handleScannedBarcode(upc) {
       openAddModal();
       document.getElementById('form-upc').value = upc;
-      document.getElementById('form-title').value = "Searching UPC...";
+      document.getElementById('form-title').value = "Searching barcode...";
 
       const apiKey = localStorage.getItem('tmdb_api_key');
       try {
@@ -401,78 +741,167 @@
         
         if (upcData.items && upcData.items.length > 0) {
           let rawTitle = upcData.items[0].title;
-          let cleanedTitle = rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition|Combo|Pack)\b/gi, '').trim();
+          let cleanedTitle = rawTitle.replace(/\b(Blu-ray|4K|DVD|UHD|Steelbook|Edition|Combo|Pack|Collector's)\b/gi, '').trim();
 
           const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(cleanedTitle)}`);
           const tmdbData = await tmdbRes.json();
 
           if (tmdbData.results && tmdbData.results.length > 0) {
-            const bestMatch = tmdbData.results[0];
-            await fetchAndFillMovieDetails(bestMatch.id);
+            await fetchAndFillMovieDetails(tmdbData.results[0].id);
             return;
           }
           document.getElementById('form-title').value = cleanedTitle;
         } else {
           document.getElementById('form-title').value = "";
-          alert("Barcode not found in database. Please enter title manually.");
+          alert("Barcode lookup failed. Enter title manually.");
         }
       } catch (e) {
         document.getElementById('form-title').value = "";
       }
     }
 
-    function startCameraScanner() {
-      document.getElementById('start-scan-btn').classList.add('hidden');
-      document.getElementById('stop-scan-btn').classList.remove('hidden');
-      html5QrcodeScanner = new Html5Qrcode("reader");
-      html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (text) => {
-        handleScannedBarcode(text);
-        stopCameraScanner();
-      }, () => {});
+    function openDetailModal(id) {
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
+      activeDetailId = id;
+
+      document.getElementById('detail-title').innerText = m.title;
+      document.getElementById('detail-subhead').innerText = `${m.year || 'N/A'} • ${m.director || 'Unknown Director'}`;
+      document.getElementById('detail-format-badge').innerText = m.format;
+      document.getElementById('detail-packaging-badge').innerText = m.packaging;
+      document.getElementById('detail-owned-days').innerText = calculateDaysOwned(m.dateAdded);
+      document.getElementById('detail-overview').innerText = m.overview || "No synopsis recorded for this title.";
+      document.getElementById('detail-studio').innerText = m.studio || "Unknown Studio";
+      document.getElementById('detail-label').innerText = m.label || "None";
+      document.getElementById('detail-hdr').innerText = m.hdrType || "SDR";
+      document.getElementById('detail-audio').innerText = m.audioFormat || "N/A";
+      document.getElementById('detail-has-slip').innerText = m.hasSlipcover ? "Yes" : "No";
+      document.getElementById('detail-added-date').innerText = m.dateAdded || "Unknown";
+      document.getElementById('detail-upc').innerText = m.upc || "N/A";
+      document.getElementById('detail-4k-exists').innerText = m.has4kUpgrade ? "Yes" : "No";
+      document.getElementById('detail-notes').innerText = m.notes || "No custom notes recorded.";
+
+      const boutiqueBadge = document.getElementById('detail-boutique-badge');
+      if (m.label && m.label !== 'None') {
+        boutiqueBadge.innerText = m.label;
+        boutiqueBadge.className = `text-[10px] font-bold px-2 py-0.5 rounded ${getBoutiqueBadgeClass(m.label)}`;
+      } else boutiqueBadge.classList.add('hidden');
+
+      document.getElementById('detail-poster').src = m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster';
+      document.getElementById('detail-backdrop').src = m.backdrop || m.poster || '';
+
+      document.getElementById('detail-modal').classList.remove('hidden');
     }
 
-    function stopCameraScanner() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-          html5QrcodeScanner = null;
-          document.getElementById('start-scan-btn').classList.remove('hidden');
-          document.getElementById('stop-scan-btn').classList.add('hidden');
-        }).catch(() => {});
-      }
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+      activeDetailId = null;
     }
 
-    function handleManualUpcSubmit() {
-      const upc = document.getElementById('manual-upc-input').value.trim();
-      if (upc) {
-        handleScannedBarcode(upc);
-        document.getElementById('manual-upc-input').value = '';
-      }
-    }
+    async function playTrailer() {
+      const m = collection.find(item => item.id === activeDetailId);
+      if (!m) return;
 
-    async function searchTMDBForTitle() {
-      const query = document.getElementById('form-title').value.trim();
       const apiKey = localStorage.getItem('tmdb_api_key');
-      const resultsDiv = document.getElementById('tmdb-results');
+      let youtubeKey = null;
 
-      if (!query || !apiKey) return;
-
-      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
-
-      resultsDiv.innerHTML = '';
-      if (data.results && data.results.length > 0) {
-        resultsDiv.classList.remove('hidden');
-        data.results.slice(0, 4).forEach(movie => {
-          const row = document.createElement('div');
-          row.className = "p-1.5 hover:bg-slate-700 cursor-pointer flex justify-between rounded text-slate-200";
-          row.innerHTML = `<span>${movie.title} (${(movie.release_date || '').slice(0,4)})</span>`;
-          row.onclick = async () => {
-            resultsDiv.classList.add('hidden');
-            await fetchAndFillMovieDetails(movie.id);
-          };
-          resultsDiv.appendChild(row);
-        });
+      if (m.tmdbId) {
+        try {
+          const res = await fetch(`https://api.themoviedb.org/3/movie/${m.tmdbId}/videos?api_key=${apiKey}`);
+          const data = await res.json();
+          if (data.results && data.results.length > 0) {
+            const trailer = data.results.find(v => v.type === "Trailer" && v.site === "YouTube") || data.results[0];
+            if (trailer) youtubeKey = trailer.key;
+          }
+        } catch (e) {}
       }
+
+      if (youtubeKey) {
+        document.getElementById('trailer-iframe').src = `https://www.youtube.com/embed/${youtubeKey}?autoplay=1`;
+        document.getElementById('trailer-modal').classList.remove('hidden');
+      } else {
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(m.title + ' ' + m.year + ' trailer')}`, '_blank');
+      }
+    }
+
+    function closeTrailerModal() {
+      document.getElementById('trailer-modal').classList.add('hidden');
+      document.getElementById('trailer-iframe').src = '';
+    }
+
+    function openImportModal() { document.getElementById('import-modal').classList.remove('hidden'); }
+    function closeImportModal() { document.getElementById('import-modal').classList.add('hidden'); }
+
+    function processCsvUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const status = document.getElementById('import-status');
+      status.innerText = "Parsing Libib CSV data...";
+      status.classList.remove('hidden');
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        if (lines.length < 2) return alert("Invalid CSV file.");
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+        let importedCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          
+          // Simple regex CSV line split for quoted strings
+          const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+          const cleanCols = cols.map(c => c.trim().replace(/^"|"$/g, ''));
+
+          let item = {
+            id: 'm_' + (Date.now() + i),
+            title: cleanCols[headers.indexOf('title')] || cleanCols[0] || 'Untitled',
+            director: cleanCols[headers.indexOf('creators')] || cleanCols[headers.indexOf('director')] || '',
+            format: mapLibibFormat(cleanCols[headers.indexOf('format')] || ''),
+            upc: cleanCols[headers.indexOf('upc')] || cleanCols[headers.indexOf('ean')] || '',
+            publisher: cleanCols[headers.indexOf('publisher')] || '',
+            dateAdded: cleanCols[headers.indexOf('began')] || cleanCols[headers.indexOf('added')] || new Date().toISOString().slice(0, 10),
+            notes: cleanCols[headers.indexOf('notes')] || '',
+            packaging: 'Standard Case',
+            label: mapBoutiqueLabel(cleanCols[headers.indexOf('publisher')] || ''),
+            poster: cleanCols[headers.indexOf('image')] || ''
+          };
+
+          if (item.title && item.title !== 'Title') {
+            collection.push(item);
+            importedCount++;
+          }
+        }
+
+        saveCollection();
+        renderCatalog();
+        closeImportModal();
+        alert(`Successfully imported ${importedCount} titles from Libib CSV!`);
+      };
+      reader.readAsText(file);
+    }
+
+    function mapLibibFormat(fmtStr) {
+      fmtStr = fmtStr.toLowerCase();
+      if (fmtStr.includes('4k') || fmtStr.includes('uhd')) return '4K UHD';
+      if (fmtStr.includes('blu')) return 'Blu-ray';
+      if (fmtStr.includes('dvd')) return 'DVD';
+      if (fmtStr.includes('vhs')) return 'VHS';
+      return 'Blu-ray';
+    }
+
+    function mapBoutiqueLabel(pubStr) {
+      if (!pubStr) return 'None';
+      if (pubStr.includes('Criterion')) return 'Criterion Collection';
+      if (pubStr.includes('Arrow')) return 'Arrow Video';
+      if (pubStr.includes('Vinegar')) return 'Vinegar Syndrome';
+      if (pubStr.includes('Shout') || pubStr.includes('Scream')) return 'Shout! Factory';
+      if (pubStr.includes('Kino')) return 'Kino Lorber';
+      if (pubStr.includes('Severin')) return 'Severin Films';
+      return 'None';
     }
 
     function openAddModal() {
@@ -483,31 +912,11 @@
       document.getElementById('form-studio').value = '';
       document.getElementById('form-poster').value = '';
       document.getElementById('form-upc').value = '';
+      document.getElementById('form-added-date').value = new Date().toISOString().slice(0, 10);
       document.getElementById('movie-modal').classList.remove('hidden');
     }
 
     function closeModal() { document.getElementById('movie-modal').classList.add('hidden'); }
-
-    function editMovie(id) {
-      const m = collection.find(item => item.id === id);
-      if (!m) return;
-
-      document.getElementById('modal-title').innerText = "Edit Physical Edition";
-      document.getElementById('form-id').value = m.id;
-      document.getElementById('form-title').value = m.title;
-      document.getElementById('form-format').value = m.format;
-      document.getElementById('form-packaging').value = m.packaging;
-      document.getElementById('form-director').value = m.director || '';
-      document.getElementById('form-studio').value = m.studio || '';
-      document.getElementById('form-hdr').value = m.hdrType || 'None/SDR';
-      document.getElementById('form-audio').value = m.audioFormat || '';
-      document.getElementById('form-slipcover').checked = m.hasSlipcover || false;
-      document.getElementById('form-has4k').checked = m.has4kUpgrade || false;
-      document.getElementById('form-upc').value = m.upc || '';
-      document.getElementById('form-poster').value = m.poster || '';
-
-      document.getElementById('movie-modal').classList.remove('hidden');
-    }
 
     function saveMovieForm() {
       const id = document.getElementById('form-id').value;
@@ -517,14 +926,21 @@
       const item = {
         id: id || ('m_' + Date.now()),
         title: title,
+        tmdbId: document.getElementById('form-tmdb-id').value,
+        overview: document.getElementById('form-overview').value,
+        year: document.getElementById('form-year').value,
+        backdrop: document.getElementById('form-backdrop').value,
         format: document.getElementById('form-format').value,
         packaging: document.getElementById('form-packaging').value,
         director: document.getElementById('form-director').value.trim(),
+        label: document.getElementById('form-label').value,
         studio: document.getElementById('form-studio').value.trim(),
         hdrType: document.getElementById('form-hdr').value,
         audioFormat: document.getElementById('form-audio').value.trim(),
         hasSlipcover: document.getElementById('form-slipcover').checked,
         has4kUpgrade: document.getElementById('form-has4k').checked,
+        dateAdded: document.getElementById('form-added-date').value || new Date().toISOString().slice(0, 10),
+        notes: document.getElementById('form-notes').value.trim(),
         upc: document.getElementById('form-upc').value.trim(),
         poster: document.getElementById('form-poster').value.trim()
       };
@@ -539,16 +955,100 @@
       closeModal();
     }
 
-    function deleteMovie(id) {
-      if (confirm("Delete this item?")) {
-        collection = collection.filter(m => m.id !== id);
+    function deleteMovieFromDetail() {
+      if (activeDetailId && confirm("Delete this film from your vault?")) {
+        collection = collection.filter(m => m.id !== activeDetailId);
         saveCollection();
         renderCatalog();
+        closeDetailModal();
       }
+    }
+
+    function editMovieFromDetail() {
+      const id = activeDetailId;
+      closeDetailModal();
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById('modal-title').innerText = "Edit Physical Edition";
+      document.getElementById('form-id').value = m.id;
+      document.getElementById('form-title').value = m.title;
+      document.getElementById('form-format').value = m.format;
+      document.getElementById('form-packaging').value = m.packaging;
+      document.getElementById('form-director').value = m.director || '';
+      document.getElementById('form-label').value = m.label || 'None';
+      document.getElementById('form-studio').value = m.studio || '';
+      document.getElementById('form-hdr').value = m.hdrType || 'None/SDR';
+      document.getElementById('form-audio').value = m.audioFormat || '';
+      document.getElementById('form-slipcover').checked = m.hasSlipcover || false;
+      document.getElementById('form-has4k').checked = m.has4kUpgrade || false;
+      document.getElementById('form-added-date').value = m.dateAdded || '';
+      document.getElementById('form-notes').value = m.notes || '';
+      document.getElementById('form-upc').value = m.upc || '';
+      document.getElementById('form-poster').value = m.poster || '';
+
+      document.getElementById('movie-modal').classList.remove('hidden');
+    }
+
+    function switchTab(tab) {
+      ['catalog', 'scanner', 'upgrades', 'stats'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-400');
+        document.getElementById(`tab-btn-${t}`).classList.add('border-transparent');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-400');
+      if (tab !== 'scanner' && html5QrcodeScanner) stopCameraScanner();
     }
 
     function updateStats() {
       document.getElementById('stats-summary').innerText = `${collection.length} Physical Editions`;
+      document.getElementById('stat-total-count').innerText = collection.length;
+      document.getElementById('stat-steelbook-count').innerText = collection.filter(m => m.packaging === 'Steelbook').length;
+      document.getElementById('stat-slip-count').innerText = collection.filter(m => m.hasSlipcover).length;
+      document.getElementById('stat-boutique-count').innerText = collection.filter(m => m.label && m.label !== 'None').length;
+
+      // Render Format Stats Bars
+      const barsDiv = document.getElementById('stats-format-bars');
+      const counts = { '4K UHD': 0, 'Blu-ray': 0, 'DVD': 0, 'VHS/Other': 0 };
+      collection.forEach(m => {
+        if (counts[m.format] !== undefined) counts[m.format]++;
+        else counts['VHS/Other']++;
+      });
+
+      barsDiv.innerHTML = Object.keys(counts).map(fmt => {
+        const pct = collection.length ? Math.round((counts[fmt] / collection.length) * 100) : 0;
+        return `
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-semibold">${fmt}</span>
+              <span class="text-amber-400 font-bold">${counts[fmt]} (${pct}%)</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="bg-amber-500 h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function exportToJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `filmvault_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function clearAllData() {
+      if (confirm("Are you sure you want to clear your entire local media library?")) {
+        collection = [];
+        saveCollection();
+        renderCatalog();
+        closeSettingsModal();
+      }
     }
 
     function setFormatFilter(fmt) {
@@ -565,26 +1065,16 @@
     function toggleSpecialFilter(type) {
       specialFilters[type] = !specialFilters[type];
       const btn = document.getElementById(`filter-${type}`);
-      if (specialFilters[type]) {
-        btn.classList.add('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
-      } else {
-        btn.classList.remove('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
-      }
+      if (specialFilters[type]) btn.classList.add('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
+      else btn.classList.remove('bg-amber-500/20', 'border-amber-500', 'text-amber-400');
       renderCatalog();
     }
 
     function filterCatalog() { renderCatalog(); }
-    function clearSearch() {
-      document.getElementById('search-input').value = '';
-      renderCatalog();
-    }
-
+    function clearSearch() { document.getElementById('search-input').value = ''; renderCatalog(); }
     function openSettingsModal() { document.getElementById('settings-modal').classList.remove('hidden'); }
     function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
-    function saveSettings() {
-      localStorage.setItem('tmdb_api_key', document.getElementById('tmdb-api-key-input').value.trim());
-      closeSettingsModal();
-    }
+    function saveSettings() { localStorage.setItem('tmdb_api_key', document.getElementById('tmdb-api-key-input').value.trim()); closeSettingsModal(); }
 
     window.onload = initApp;
   </script>
