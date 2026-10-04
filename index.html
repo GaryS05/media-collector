@@ -264,10 +264,10 @@
         <div class="border-t border-slate-800 p-3 bg-slate-950/40">
           <div class="flex items-center justify-between gap-2 mb-2">
             <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold cursor-pointer">
-              <input type="checkbox" id="advisor-research" checked class="accent-amber-500">
+              <input type="checkbox" id="advisor-research" class="accent-amber-500">
               Research current web sources
             </label>
-            <span class="text-[9px] text-slate-600">Research mode can use additional API credits.</span>
+            <span class="text-[9px] text-slate-600">Web research is optional and may add search-provider charges; normal free-model chat is $0.</span>
           </div>
           <div class="flex gap-2">
             <textarea id="advisor-input" rows="2" onkeydown="handleAdvisorKeydown(event)" placeholder="Ask about a release, price, transfer, format, or whether you should own it..." class="flex-1 resize-none bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"></textarea>
@@ -453,13 +453,13 @@
 
         <div class="border-t border-slate-800 pt-3 space-y-3">
           <div>
-            <label class="block font-bold text-violet-300 mb-1 uppercase tracking-wider">Collector Advisor API Key</label>
-            <input type="password" id="openai-api-key-input" placeholder="OpenAI API key" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
-            <p class="text-[9px] text-slate-600 mt-1 leading-relaxed">For this local-only version, the key is stored in this browser's LocalStorage. Do not use this setup on a public website or shared computer.</p>
+            <label class="block font-bold text-violet-300 mb-1 uppercase tracking-wider">OpenRouter API Key</label>
+            <input type="password" id="openai-api-key-input" placeholder="sk-or-v1-…" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
+            <p class="text-[9px] text-slate-600 mt-1 leading-relaxed">Uses OpenRouter's OpenAI-compatible API. The free router currently routes among available free models; inference is $0, though free models can have rate limits. Your key is stored only in this browser's LocalStorage.</p>
           </div>
           <div>
             <label class="block font-bold text-slate-400 mb-1 uppercase tracking-wider">Advisor Model</label>
-            <input type="text" id="openai-model-input" value="gpt-6-luna" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
+            <input type="text" id="openai-model-input" value="openrouter/free" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
           </div>
         </div>
 
@@ -516,8 +516,8 @@
       const apiKey = localStorage.getItem('tmdb_api_key') || '';
       localStorage.setItem('tmdb_api_key', apiKey);
       document.getElementById('tmdb-api-key-input').value = apiKey;
-      document.getElementById('openai-api-key-input').value = localStorage.getItem('filmvault_openai_api_key') || '';
-      document.getElementById('openai-model-input').value = localStorage.getItem('filmvault_openai_model') || 'gpt-6-luna';
+      document.getElementById('openai-api-key-input').value = localStorage.getItem('filmvault_openrouter_api_key') || localStorage.getItem('filmvault_openai_api_key') || '';
+      document.getElementById('openai-model-input').value = localStorage.getItem('filmvault_openrouter_model') || localStorage.getItem('filmvault_openai_model') || 'openrouter/free';
       loadAdvisorHistory();
       loadUpcCache();
 
@@ -1762,7 +1762,7 @@ ${userText}`;
       const input = document.getElementById('advisor-input');
       const text = input.value.trim();
       if (!text) return;
-      const apiKey = localStorage.getItem('filmvault_openai_api_key') || '';
+      const apiKey = localStorage.getItem('filmvault_openrouter_api_key') || localStorage.getItem('filmvault_openai_api_key') || '';
       if (!apiKey) {
         alert('Add your Collector Advisor API key in Settings first.');
         openSettingsModal();
@@ -1781,34 +1781,44 @@ ${userText}`;
       box.appendChild(thinking); box.scrollTop = box.scrollHeight;
 
       try {
-        const model = localStorage.getItem('filmvault_openai_model') || 'gpt-6-luna';
+        const model = localStorage.getItem('filmvault_openrouter_model') || localStorage.getItem('filmvault_openai_model') || 'openrouter/free';
         const useResearch = document.getElementById('advisor-research').checked;
         const previous = advisorHistory.slice(-10).map(m => ({role:m.role, content:m.content}));
+        const systemPrompt = 'You are FilmVault Collector Advisor. Be concise but substantive. Use headings and bullets. Do not pretend to know facts that are not supported. This is a collector decision-support tool, not a generic movie recommendation bot.';
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          ...previous,
+          { role: 'user', content: buildAdvisorPrompt(text) }
+        ];
         const payload = {
           model,
-          store: false,
-          instructions: 'Be concise but substantive. Use headings and bullets. Do not pretend to know facts that are not supported. This is a collector decision-support tool, not a generic movie recommendation bot.',
-          input: [
-            ...previous,
-            { role: 'user', content: buildAdvisorPrompt(text) }
-          ],
-          max_output_tokens: 1400
+          messages,
+          temperature: 0.25,
+          max_tokens: 1400
         };
-        if (useResearch) payload.tools = [{type:'web_search'}];
-        const response = await fetch('https://api.openai.com/v1/responses', {
+        // OpenRouter's server-side web search works with its OpenAI-compatible
+        // Chat Completions API. It is intentionally opt-in because web search
+        // can have separate provider/tool charges even when the model is free.
+        if (useResearch) payload.tools = [{ type: 'openrouter:web_search' }];
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${apiKey}`,
+            'HTTP-Referer': window.location.href,
+            'X-Title': 'FilmVault Collector Advisor'
+          },
           body:JSON.stringify(payload)
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data?.error?.message || `API error ${response.status}`);
-        const answer = data.output_text || (Array.isArray(data.output) ? data.output.flatMap(x => x.content || []).filter(x => x.type === 'output_text').map(x => x.text).join('\n') : '');
+        if (!response.ok) throw new Error(data?.error?.message || `OpenRouter API error ${response.status}`);
+        const answer = data?.choices?.[0]?.message?.content || '';
         if (!answer) throw new Error('The advisor returned no text.');
         if (thinking) thinking.remove();
         appendAdvisorBubble('assistant', answer);
       } catch (err) {
         if (thinking) thinking.remove();
-        appendAdvisorBubble('assistant', `I couldn't complete the advisor request. ${err.message}\n\nIf this is a browser/API error, verify the Advisor API key and model in Settings. For research mode, make sure your API account supports web search.`);
+        appendAdvisorBubble('assistant', `I couldn't complete the advisor request. ${err.message}\n\nIf this is a browser/API error, verify your OpenRouter API key and model in Settings. If Research is enabled, make sure the selected model supports tools.`);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
@@ -1857,8 +1867,13 @@ ${userText}`;
     function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
     function saveSettings() {
       localStorage.setItem('tmdb_api_key', document.getElementById('tmdb-api-key-input').value.trim());
-      localStorage.setItem('filmvault_openai_api_key', document.getElementById('openai-api-key-input').value.trim());
-      localStorage.setItem('filmvault_openai_model', document.getElementById('openai-model-input').value.trim() || 'gpt-6-luna');
+      const advisorKey = document.getElementById('openai-api-key-input').value.trim();
+      const advisorModel = document.getElementById('openai-model-input').value.trim() || 'openrouter/free';
+      localStorage.setItem('filmvault_openrouter_api_key', advisorKey);
+      localStorage.setItem('filmvault_openrouter_model', advisorModel);
+      // Keep legacy keys synchronized so existing FilmVault installations migrate cleanly.
+      localStorage.removeItem('filmvault_openai_api_key');
+      localStorage.removeItem('filmvault_openai_model');
       closeSettingsModal();
       showToast('Settings saved.');
       setTimeout(hideToast, 1200);
