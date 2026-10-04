@@ -56,79 +56,30 @@
       border: 1px solid rgba(255,255,255,.075);
       box-shadow: 0 14px 35px rgba(0,0,0,.20);
     }
-    .vault-glow {
-      box-shadow:
-        0 0 0 1px rgba(245,158,11,.08),
-        0 18px 50px rgba(0,0,0,.28),
-        inset 0 1px rgba(255,255,255,.035);
-    }
+    .vault-glow { box-shadow: 0 0 0 1px rgba(245,158,11,.08), 0 18px 50px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.035); }
     .scanline-card { position: relative; overflow: hidden; }
     .scanline-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .045;
-      background: repeating-linear-gradient(
-        to bottom,
-        #fff 0,
-        #fff 1px,
-        transparent 1px,
-        transparent 5px
-      );
+      content: ""; position:absolute; inset:0; pointer-events:none; opacity:.045;
+      background: repeating-linear-gradient(to bottom, #fff 0, #fff 1px, transparent 1px, transparent 5px);
     }
     .poster-card { box-shadow: 0 10px 24px rgba(0,0,0,.35); }
-    .poster-card:hover {
-      box-shadow:
-        0 18px 35px rgba(0,0,0,.48),
-        0 0 22px rgba(245,158,11,.10);
-    }
+    .poster-card:hover { box-shadow: 0 18px 35px rgba(0,0,0,.48), 0 0 22px rgba(245,158,11,.10); }
     .poster-fallback {
-      background:
-        radial-gradient(circle at 50% 25%, rgba(245,158,11,.16), transparent 35%),
-        linear-gradient(145deg,#16121b,#08090e);
+      background: radial-gradient(circle at 50% 25%, rgba(245,158,11,.16), transparent 35%), linear-gradient(145deg,#16121b,#08090e);
     }
-    .stat-tile {
-      background: linear-gradient(
-        135deg,
-        rgba(255,255,255,.045),
-        rgba(255,255,255,.018)
-      );
-      border: 1px solid rgba(255,255,255,.07);
-    }
-    .neon-divider {
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(245,158,11,.55),
-        rgba(139,92,246,.4),
-        transparent
-      );
-    }
-    .collector-chip {
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(15,17,25,.8);
-    }
-    .modal-sheen {
-      box-shadow:
-        0 30px 100px rgba(0,0,0,.65),
-        0 0 50px rgba(124,58,237,.08);
-    }
-    @keyframes fvPulse {
-      0%,100% { opacity:.65 }
-      50% { opacity:1 }
-    }
+    .stat-tile { background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.018)); border:1px solid rgba(255,255,255,.07); }
+    .neon-divider { height:1px; background: linear-gradient(90deg, transparent, rgba(245,158,11,.55), rgba(139,92,246,.4), transparent); }
+    .collector-chip { border:1px solid rgba(255,255,255,.08); background:rgba(15,17,25,.8); }
+    .modal-sheen { box-shadow: 0 30px 100px rgba(0,0,0,.65), 0 0 50px rgba(124,58,237,.08); }
+    .advisor-bubble-user { background: linear-gradient(135deg, rgba(245,158,11,.16), rgba(249,115,22,.10)); border:1px solid rgba(245,158,11,.18); }
+    .advisor-bubble-ai { background: linear-gradient(145deg, rgba(23,25,35,.95), rgba(10,12,18,.95)); border:1px solid rgba(139,92,246,.16); }
+    .advisor-thinking { background: linear-gradient(90deg, rgba(245,158,11,.06), rgba(139,92,246,.08), rgba(245,158,11,.06)); background-size:200% 100%; animation: advisorShimmer 1.6s linear infinite; }
+    @keyframes advisorShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes fvPulse { 0%,100%{opacity:.65} 50%{opacity:1} }
     .fv-pulse { animation: fvPulse 2.8s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration:.001ms !important;
-        transition-duration:.001ms !important;
-      }
-    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.001ms !important; transition-duration:.001ms !important; } }
   </style>
 </head>
-
 <body class="flex flex-col h-screen overflow-hidden text-slate-100">
 
   <!-- Header -->
@@ -138,753 +89,554 @@
         <i class="fa-solid fa-compact-disc text-lg"></i>
       </div>
       <div>
-        <h1 class="font-black text-lg tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-          FilmVault
-        </h1>
-        <p class="text-[10px] text-slate-500 font-semibold tracking-widest uppercase" id="stats-summary">
-          0 Items · 0 Discs · 0 Copies
-        </p>
+        <h1 class="font-black text-lg tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">FilmVault</h1>
+        <p class="text-[10px] text-slate-500 font-semibold tracking-widest uppercase" id="stats-summary">0 Items · 0 Discs · 0 Copies</p>
       </div>
     </div>
-
     <div class="flex items-center space-x-2">
-      <button
-        onclick="openSettingsModal()"
-        class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition"
-        title="Settings & Import">
+      <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition" title="Settings & Import">
         <i class="fa-solid fa-gear text-sm"></i>
       </button>
-
-      <button
-        onclick="openClearModal()"
-        class="p-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 transition"
-        title="Clear Collection">
+      <button onclick="openClearModal()" class="p-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 transition" title="Clear Collection">
         <i class="fa-solid fa-trash-can text-sm"></i>
       </button>
-
-      <button
-        onclick="surpriseMe()"
-        class="hidden sm:flex p-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-900/50 text-violet-300 border border-violet-800/40 transition"
-        title="Random Movie">
+      <button onclick="surpriseMe()" class="hidden sm:flex p-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-900/50 text-violet-300 border border-violet-800/40 transition" title="Random Movie">
         <i class="fa-solid fa-dice text-sm"></i>
       </button>
-
-      <button
-        onclick="openAddModal()"
-        class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition active:scale-95">
+      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition active:scale-95">
         <i class="fa-solid fa-plus mr-1.5"></i> Add
       </button>
     </div>
   </header>
 
   <!-- Progress Notification Toast -->
-  <div
-    id="toast-banner"
-    class="hidden bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2.5 flex items-center justify-between shrink-0 shadow-xl transition-all">
+  <div id="toast-banner" class="hidden bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2.5 flex items-center justify-between shrink-0 shadow-xl transition-all">
     <span id="toast-message">Processing...</span>
     <i class="fa-solid fa-spinner animate-spin text-sm"></i>
   </div>
 
   <!-- Navigation Tabs -->
   <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-3 flex justify-around text-xs font-bold text-slate-400 shrink-0">
-    <button
-      onclick="switchTab('catalog')"
-      id="tab-btn-catalog"
-      class="py-3 px-4 border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 transition">
+    <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="py-3 px-4 border-b-2 border-amber-500 text-amber-400 flex items-center space-x-2 transition">
       <i class="fa-solid fa-film text-sm"></i>
       <span>Collection</span>
     </button>
-
-    <button
-      onclick="switchTab('scanner')"
-      id="tab-btn-scanner"
-      class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
+    <button onclick="switchTab('scanner')" id="tab-btn-scanner" class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
       <i class="fa-solid fa-barcode text-sm"></i>
       <span>Scanner</span>
     </button>
-
-    <button
-      onclick="switchTab('upgrades')"
-      id="tab-btn-upgrades"
-      class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
+    <button onclick="switchTab('upgrades')" id="tab-btn-upgrades" class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
       <i class="fa-solid fa-arrow-up-right-dots text-sm"></i>
       <span>4K Upgrades</span>
+    </button>
+    <button onclick="switchTab('advisor')" id="tab-btn-advisor" class="py-3 px-4 border-b-2 border-transparent hover:text-slate-200 flex items-center space-x-2 transition">
+      <i class="fa-solid fa-robot text-sm"></i>
+      <span>Advisor</span>
     </button>
   </nav>
 
   <!-- Main View Area -->
   <main class="flex-1 overflow-y-auto hide-scrollbar p-4 relative" id="main-container">
-
+    
     <!-- CATALOG TAB -->
     <section id="tab-catalog" class="space-y-4">
-
       <div class="glass-card vault-glow rounded-2xl p-4 scanline-card">
         <div class="flex items-start justify-between gap-3">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-[9px] font-black uppercase tracking-[.22em] text-amber-500">
-                THE VAULT
-              </span>
+              <span class="text-[9px] font-black uppercase tracking-[.22em] text-amber-500">THE VAULT</span>
               <span class="w-1.5 h-1.5 rounded-full bg-red-500 fv-pulse"></span>
-              <span class="text-[9px] text-slate-500 uppercase tracking-widest">
-                Physical Media Archive
-              </span>
+              <span class="text-[9px] text-slate-500 uppercase tracking-widest">Physical Media Archive</span>
             </div>
-
-            <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white">
-              Your personal movie shelf.
-            </h2>
-
-            <p class="text-[11px] text-slate-400 mt-1 max-w-xl">
-              Browse by format, hunt for missing metadata, or roll the dice on something tonight.
-            </p>
+            <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white">Your personal movie shelf.</h2>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-xl">Browse by format, hunt for missing metadata, or roll the dice on something tonight.</p>
           </div>
-
-          <button
-            onclick="surpriseMe()"
-            class="shrink-0 hidden sm:flex items-center gap-2 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-400/20 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider">
-            <i class="fa-solid fa-dice"></i>
-            Surprise Me
+          <button onclick="surpriseMe()" class="shrink-0 hidden sm:flex items-center gap-2 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-400/20 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider">
+            <i class="fa-solid fa-dice"></i> Surprise Me
           </button>
         </div>
-
         <div class="neon-divider my-3"></div>
-
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div class="stat-tile rounded-xl p-2.5">
-            <div class="text-[9px] uppercase tracking-widest text-slate-500">Collection</div>
-            <div id="dash-total" class="text-lg font-black text-white mt-0.5">0</div>
-          </div>
+          <div class="stat-tile rounded-xl p-2.5"><div class="text-[9px] uppercase tracking-widest text-slate-500">Collection</div><div id="dash-total" class="text-lg font-black text-white mt-0.5">0</div></div>
+          <div class="stat-tile rounded-xl p-2.5"><div class="text-[9px] uppercase tracking-widest text-slate-500">4K UHD</div><div id="dash-4k" class="text-lg font-black text-amber-400 mt-0.5">0</div></div>
+          <div class="stat-tile rounded-xl p-2.5"><div class="text-[9px] uppercase tracking-widest text-slate-500">Boutique</div><div id="dash-boutique" class="text-lg font-black text-violet-300 mt-0.5">0</div></div>
+          <div class="stat-tile rounded-xl p-2.5"><div class="text-[9px] uppercase tracking-widest text-slate-500">Needs Data</div><div id="dash-missing" class="text-lg font-black text-red-300 mt-0.5">0</div></div>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+          <input type="text" id="search-input" oninput="filterCatalog()" placeholder="Search titles, directors, publishers, barcodes..." 
+                 class="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-8 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-500 shadow-inner">
+        </div>
 
-          <div class="stat-tile rounded-xl p-2.5">
-            <div class="text-[9px] uppercase tracking-widest text-slate-500">4K UHD</div>
-            <div id="dash-4k" class="text-lg font-black text-amber-400 mt-0.5">0</div>
-          </div>
-
-          <div class="stat-tile rounded-xl p-2.5">
-            <div class="text-[9px] uppercase tracking-widest text-slate-500">Boutique</div>
-            <div id="dash-boutique" class="text-lg font-black text-violet-300 mt-0.5">0</div>
-          </div>
-
-          <div class="stat-tile rounded-xl p-2.5">
-            <div class="text-[9px] uppercase tracking-widest text-slate-500">Needs Data</div>
-            <div id="dash-missing" class="text-lg font-black text-red-300 mt-0.5">0</div>
-          </div>
+        <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-0.5">
+          <button onclick="setFormatFilter('ALL')" id="filter-fmt-ALL" class="filter-fmt-btn bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shrink-0 transition">All</button>
+          <button onclick="setFormatFilter('4K UHD')" id="filter-fmt-4K UHD" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">4K UHD</button>
+          <button onclick="setFormatFilter('Blu-ray')" id="filter-fmt-Blu-ray" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">Blu-ray</button>
+          <button onclick="setFormatFilter('DVD')" id="filter-fmt-DVD" class="filter-fmt-btn bg-slate-800/80 text-slate-300 border border-slate-700/50 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition">DVD</button>
+          <button onclick="setEraFilter('80s')" id="filter-era-80s" class="era-filter-btn collector-chip text-slate-300 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 transition"><i class="fa-solid fa-star mr-1 text-amber-500"></i>80s</button>
+          <button onclick="setEraFilter('ALL')" id="filter-era-clear" class="hidden collector-chip text-slate-400 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0">Clear era</button>
+          <select id="sort-select" onchange="setSortOrder(this.value)" class="ml-auto shrink-0 bg-slate-900 border border-slate-700/60 text-slate-300 rounded-full px-3 py-1.5 text-[11px] font-bold focus:outline-none focus:border-amber-500">
+            <option value="title">Title A–Z</option><option value="added">Recently Added</option><option value="year">Release Year</option><option value="format">Format</option>
+          </select>
         </div>
       </div>
 
-      <div class="space-y-3">
+      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5"></div>
 
-        <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-
-          <input
-            type="text"
-            id="search-input"
-            oninput="filterCatalog()"
-            placeholder="Search titles, directors, publishers, barcodes..."
-            class="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-8 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-500 shadow-inner">
+      <div id="empty-catalog" class="hidden text-center py-16 space-y-3">
+        <div class="w-16 h-16 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-600 text-2xl shadow-inner">
+          <i class="fa-solid fa-film"></i>
         </div>
-
-        <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
-
-          <button
-            onclick="setFormatFilter('All')"
-            id="filter-fmt-All"
-            class="filter-fmt-btn shrink-0 bg-amber-500 text-slate-950 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-            All
-          </button>
-
-          <button
-            onclick="setFormatFilter('4K UHD')"
-            id="filter-fmt-4K UHD"
-            class="filter-fmt-btn shrink-0 bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-            4K
-          </button>
-
-          <button
-            onclick="setFormatFilter('Blu-ray')"
-            id="filter-fmt-Blu-ray"
-            class="filter-fmt-btn shrink-0 bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-            Blu-ray
-          </button>
-
-          <button
-            onclick="setFormatFilter('DVD')"
-            id="filter-fmt-DVD"
-            class="filter-fmt-btn shrink-0 bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-            DVD
-          </button>
-
-          <button
-            onclick="setFormatFilter('Other')"
-            id="filter-fmt-Other"
-            class="filter-fmt-btn shrink-0 bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
-            Other
-          </button>
-        </div>
-
-        <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-        </div>
+        <h3 class="text-slate-400 font-bold text-sm">No titles found in collection</h3>
       </div>
     </section>
 
     <!-- SCANNER TAB -->
     <section id="tab-scanner" class="hidden space-y-4">
-
-      <div class="glass-card rounded-2xl p-4">
-        <div class="flex items-center gap-2 mb-1">
-          <i class="fa-solid fa-barcode text-amber-400"></i>
-          <h2 class="font-black text-lg">Barcode Scanner</h2>
+      <div class="glass-card rounded-2xl p-4 text-center space-y-3">
+        <h2 class="font-bold text-sm text-white uppercase tracking-wider">Camera Barcode Scanner</h2>
+        <div id="reader" class="overflow-hidden rounded-xl bg-black/60 border border-slate-800 min-h-[220px] flex items-center justify-center relative">
+          <span class="text-slate-500 text-xs font-medium">Camera inactive. Click start below.</span>
         </div>
-
-        <p class="text-[11px] text-slate-400 mb-4">
-          Scan the UPC/EAN on a physical case to identify and add an edition.
-        </p>
-
-        <div
-          id="reader"
-          class="rounded-xl overflow-hidden bg-black border border-slate-800 min-h-[240px]">
-        </div>
-
-        <div class="flex gap-2 mt-3">
-          <button
-            onclick="startScanner()"
-            class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs">
-            <i class="fa-solid fa-camera mr-1"></i>
-            Start Scanner
+        <div class="flex justify-center space-x-3 pt-1">
+          <button onclick="startCameraScanner()" id="start-scan-btn" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center shadow-lg shadow-amber-500/10 transition">
+            <i class="fa-solid fa-camera mr-1.5"></i> Start Camera
           </button>
-
-          <button
-            onclick="stopScanner()"
-            class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs border border-slate-700">
-            Stop
+          <button onclick="stopCameraScanner()" id="stop-scan-btn" class="hidden bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center transition">
+            <i class="fa-solid fa-stop mr-1.5"></i> Stop Camera
           </button>
         </div>
+      </div>
 
-        <div class="mt-4">
-          <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Manual Barcode
-          </label>
-
-          <div class="flex gap-2 mt-1">
-            <input
-              id="manual-barcode"
-              type="text"
-              inputmode="numeric"
-              placeholder="UPC / EAN"
-              class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500">
-
-            <button
-              onclick="manualBarcodeLookup()"
-              class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 rounded-xl text-xs font-bold">
-              Lookup
-            </button>
-          </div>
+      <div class="glass-card rounded-2xl p-4 space-y-3">
+        <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Manual Barcode Input</h3>
+        <div class="flex space-x-2">
+          <input type="text" id="manual-upc-input" placeholder="Enter UPC / EAN digits..." class="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500">
+          <button onclick="handleManualUpcSubmit()" class="bg-slate-800 hover:bg-slate-700 font-bold px-4 py-2 rounded-xl text-xs text-slate-200 border border-slate-700/60 transition">Lookup</button>
         </div>
-
-        <div id="scanner-result" class="mt-4"></div>
       </div>
     </section>
 
     <!-- UPGRADES TAB -->
     <section id="tab-upgrades" class="hidden space-y-4">
       <div class="glass-card rounded-2xl p-4">
-        <div class="flex items-center justify-between">
+        <h2 class="font-bold text-sm text-amber-400 flex items-center">
+          <i class="fa-solid fa-sparkles mr-2"></i> Smart 4K UHD Upgrade Finder
+        </h2>
+        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Displays standard Blu-ray or DVD releases in your collection that could be upgraded to 4K UHD.</p>
+      </div>
+      <div id="upgrades-list" class="space-y-3"></div>
+    </section>
+
+    <!-- COLLECTOR ADVISOR TAB -->
+    <section id="tab-advisor" class="hidden space-y-4 max-w-4xl mx-auto">
+      <div class="glass-card vault-glow rounded-2xl p-4 scanline-card">
+        <div class="flex items-start justify-between gap-3">
           <div>
-            <span class="text-[9px] uppercase tracking-[.22em] text-amber-500 font-black">
-              FORMAT WATCH
-            </span>
-            <h2 class="text-xl font-black mt-1">4K Upgrade Shelf</h2>
-            <p class="text-[11px] text-slate-400 mt-1">
-              Non-4K editions currently in the vault.
-            </p>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[9px] font-black uppercase tracking-[.22em] text-violet-400">THE COLLECTOR ADVISOR</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 fv-pulse"></span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white">Should I buy this release?</h2>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-2xl">Ask about a movie, edition, price, transfer, boutique release, or whether another format is the smarter buy. The advisor knows your FilmVault collection.</p>
           </div>
-
-          <i class="fa-solid fa-arrow-up-right-dots text-amber-400 text-xl"></i>
+          <button onclick="clearAdvisorChat()" class="shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/70 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider">Clear</button>
         </div>
+        <div class="neon-divider my-3"></div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="advisorQuickPrompt('Is this release worth owning for my collection? Include whether I should buy it at the price I give you.')" class="collector-chip hover:border-amber-400/30 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-bold">Worth owning?</button>
+          <button onclick="advisorQuickPrompt('Is this a good price? Give me a buy-under price, fair price, and walk-away price if enough market evidence exists.')" class="collector-chip hover:border-amber-400/30 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-bold">Good price?</button>
+          <button onclick="advisorQuickPrompt('Is this a genuinely good release/transfer for its format, or is there a better Blu-ray, 4K, DVD, or boutique edition I should buy instead?')" class="collector-chip hover:border-violet-400/30 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-bold">Best release?</button>
+          <button onclick="advisorQuickPrompt('How well does this fit my existing collection? Tell me if it is a keeper, a want-list priority, a cheap-copy-only title, or a pass.')" class="collector-chip hover:border-violet-400/30 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-bold">Fits my collection?</button>
+        </div>
+      </div>
 
-        <div class="neon-divider my-4"></div>
-
-        <div id="upgrades-list" class="space-y-2"></div>
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div id="advisor-chat" class="min-h-[360px] max-h-[55vh] overflow-y-auto p-4 space-y-3">
+          <div class="advisor-bubble-ai rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-violet-300 text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-robot"></i> FilmVault Advisor</div>
+            <p class="text-xs text-slate-300 leading-relaxed mt-2">Give me the release you found and, ideally, the asking price. I’ll judge it on <strong>collection fit, release quality, transfer, extras, scarcity, price, and whether a better edition/format exists</strong> rather than blindly recommending the most expensive version.</p>
+            <p class="text-[10px] text-slate-500 mt-2">Example: “Arrow Blu-ray of <em>Dark City</em> for $22. Worth it, or should I wait for 4K?”</p>
+          </div>
+        </div>
+        <div class="border-t border-slate-800 p-3 bg-slate-950/40">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold cursor-pointer">
+              <input type="checkbox" id="advisor-research" checked class="accent-amber-500">
+              Research current web sources
+            </label>
+            <span class="text-[9px] text-slate-600">Research mode can use additional API credits.</span>
+          </div>
+          <div class="flex gap-2">
+            <textarea id="advisor-input" rows="2" onkeydown="handleAdvisorKeydown(event)" placeholder="Ask about a release, price, transfer, format, or whether you should own it..." class="flex-1 resize-none bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"></textarea>
+            <button onclick="sendAdvisorMessage()" id="advisor-send-btn" class="self-stretch bg-violet-600 hover:bg-violet-500 text-white font-bold px-4 rounded-xl text-xs shadow-lg shadow-violet-600/10"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- MOVIE MODAL -->
-  <div
-    id="movie-modal"
-    class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+  <!-- MOVIE DETAIL MODAL -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] modal-sheen flex flex-col overflow-hidden shadow-2xl relative">
+      <button onclick="closeDetailModal()" class="absolute top-3 right-3 z-20 bg-slate-950/80 text-slate-300 hover:text-white p-2.5 rounded-full backdrop-blur-sm border border-slate-800 transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
 
-    <div class="glass-card modal-sheen rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto">
+      <div class="overflow-y-auto hide-scrollbar space-y-4">
+        <div class="relative aspect-video bg-slate-950 overflow-hidden flex items-center justify-center">
+          <img id="detail-backdrop" src="" class="w-full h-full object-cover opacity-50">
+          <button id="trailer-play-btn" onclick="openTrailerModal()" class="hidden absolute bg-amber-500 hover:bg-amber-400 text-slate-950 p-4 rounded-full shadow-2xl transition transform hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-play text-xl ml-0.5"></i>
+          </button>
+        </div>
 
-      <div class="sticky top-0 z-10 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <h2 id="modal-title" class="font-black text-lg">
-          Add Physical Edition
-        </h2>
+        <div class="p-5 space-y-4 -mt-10 relative z-10">
+          <div class="flex items-start space-x-4">
+            <img id="detail-poster" src="" class="w-24 h-36 object-cover rounded-xl shadow-2xl border border-slate-700/60 shrink-0">
+            <div class="space-y-1 flex-1 min-w-0">
+              <div class="flex items-center space-x-2">
+                <span id="detail-format" class="bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded tracking-wide">4K UHD</span>
+                <span id="detail-rating-badge" class="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-bold px-2 py-0.5 rounded flex items-center">
+                  <i class="fa-solid fa-star text-[9px] mr-1"></i><span id="detail-rating">N/A</span>
+                </span>
+              </div>
+              <h2 id="detail-title" class="font-bold text-lg text-white leading-tight truncate">Movie Title</h2>
+              <p id="detail-director" class="text-xs text-slate-400 truncate">Director Name</p>
+              <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                <div id="detail-studio-badge" class="inline-block bg-slate-800 border border-slate-700/80 text-amber-400 text-[11px] px-2.5 py-1 rounded-lg font-bold">Studio</div>
+                <span id="detail-era-badge" class="hidden bg-violet-500/10 border border-violet-400/20 text-violet-300 text-[10px] px-2 py-1 rounded-lg font-bold">80s</span>
+                <span id="detail-boutique-badge" class="hidden bg-red-500/10 border border-red-400/20 text-red-300 text-[10px] px-2 py-1 rounded-lg font-bold">Boutique</span>
+              </div>
+            </div>
+          </div>
 
-        <button
-          onclick="closeModal()"
-          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+          <p id="detail-overview" class="text-xs text-slate-300 leading-relaxed font-normal">Movie synopsis...</p>
+
+          <div class="grid grid-cols-3 gap-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            <div><span class="text-slate-500 font-medium block">Discs:</span> <span id="detail-discs" class="text-slate-200 font-semibold">1</span></div>
+            <div><span class="text-slate-500 font-medium block">Copies:</span> <span id="detail-copies" class="text-slate-200 font-semibold">1</span></div>
+            <div><span class="text-slate-500 font-medium block">Length:</span> <span id="detail-length" class="text-slate-200 font-semibold">N/A</span></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            <div><span class="text-slate-500 font-medium">Added / Purchased:</span> <span id="detail-date" class="text-slate-200 font-semibold">N/A</span></div>
+            <div><span class="text-slate-500 font-medium">Owned For:</span> <span id="detail-days" class="text-slate-200 font-semibold">0 Days</span></div>
+          </div>
+
+          <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-slate-800/80">
+            <button id="detail-advisor-btn" class="bg-violet-600/20 hover:bg-violet-600/30 text-violet-200 font-bold px-4 py-2 rounded-xl text-xs border border-violet-500/20 transition"><i class="fa-solid fa-robot mr-1"></i> Ask Advisor</button>
+            <button id="detail-edit-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs border border-slate-700/50 transition">Edit</button>
+            <button id="detail-delete-btn" class="bg-red-950/40 border border-red-800/50 hover:bg-red-900/60 text-red-200 font-bold px-4 py-2 rounded-xl text-xs transition">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAILER MODAL -->
+  <div id="trailer-modal" class="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-3xl aspect-video relative bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+      <button onclick="closeTrailerModal()" class="absolute top-3 right-3 z-10 bg-slate-950/80 text-white p-2 rounded-full border border-slate-800">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+      <iframe id="trailer-iframe" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <div id="movie-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] modal-sheen flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
+        <h3 id="modal-title" class="font-bold text-sm text-white uppercase tracking-wider">Add Physical Edition</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <div class="p-4 space-y-4">
-
-        <input type="hidden" id="form-id">
-
+      <div class="p-5 overflow-y-auto space-y-4 flex-1 hide-scrollbar">
         <div>
-          <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Title
-          </label>
-
-          <input
-            id="form-title"
-            type="text"
-            class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500">
-
-          <button
-            onclick="searchTMDBTitle()"
-            class="mt-2 bg-violet-500/10 border border-violet-400/20 text-violet-300 hover:bg-violet-500/20 px-3 py-2 rounded-lg text-[10px] font-bold">
-            <i class="fa-solid fa-magnifying-glass mr-1"></i>
-            Search TMDB
-          </button>
-
-          <div id="tmdb-results" class="hidden mt-2 rounded-xl border border-slate-800 bg-slate-950 overflow-hidden"></div>
+          <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Movie Title *</label>
+          <div class="flex space-x-2">
+            <input type="text" id="form-title" placeholder="e.g. Donnie Darko (WIDESCREEN)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <button onclick="searchTMDBForTitle()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shrink-0">Search TMDB</button>
+          </div>
+          <div id="tmdb-results" class="hidden mt-2 bg-slate-950 border border-slate-800 rounded-xl p-2 max-h-40 overflow-y-auto space-y-1 text-xs"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-
           <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Format
-            </label>
-
-            <select
-              id="form-format"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
-              <option>4K UHD</option>
-              <option>Blu-ray</option>
-              <option>DVD</option>
-              <option>Other</option>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Format *</label>
+            <select id="form-format" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+              <option value="4K UHD">4K UHD</option>
+              <option value="Blu-ray">Blu-ray</option>
+              <option value="DVD">DVD</option>
             </select>
           </div>
-
           <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Packaging
-            </label>
-
-            <select
-              id="form-packaging"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
-              <option>Standard Case</option>
-              <option>Steelbook</option>
-              <option>Slipcover</option>
-              <option>Digipak</option>
-              <option>Box Set</option>
-              <option>Other</option>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Packaging</label>
+            <select id="form-packaging" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+              <option value="Standard Case">Standard Case</option>
+              <option value="Steelbook">Steelbook</option>
+              <option value="Digibook">Digibook / Box Set</option>
             </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-
-          <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Director
-            </label>
-
-            <input
-              id="form-director"
-              type="text"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
-          </div>
-
-          <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Studio / Label
-            </label>
-
-            <input
-              id="form-studio"
-              type="text"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-
-          <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Runtime
-            </label>
-
-            <input
-              id="form-length"
-              type="text"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs"
-              placeholder="e.g. 117 min">
-          </div>
-
-          <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Release / Purchase Date
-            </label>
-
-            <input
-              id="form-date"
-              type="date"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3">
-
           <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Discs
-            </label>
-
-            <input
-              id="form-discs"
-              type="number"
-              min="1"
-              value="1"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Discs</label>
+            <input type="number" id="form-discs" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
-
           <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              Copies
-            </label>
-
-            <input
-              id="form-copies"
-              type="number"
-              min="1"
-              value="1"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Copies</label>
+            <input type="number" id="form-copies" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
-
           <div>
-            <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-              UPC / EAN
-            </label>
-
-            <input
-              id="form-upc"
-              type="text"
-              inputmode="numeric"
-              class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Length (Min)</label>
+            <input type="text" id="form-length" placeholder="120" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
-        <div>
-          <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Rating
-          </label>
-
-          <input
-            id="form-rating"
-            type="text"
-            class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs"
-            placeholder="e.g. 8.2">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Director / Creators</label>
+            <input type="text" id="form-director" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Publisher / Label</label>
+            <input type="text" id="form-publisher" placeholder="Criterion, Arrow, Warner Archive, etc." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1 mt-3 uppercase tracking-wider">Production Studio</label>
+            <input type="text" id="form-studio" placeholder="Warner Bros., Universal, etc." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
         </div>
 
-        <div>
-          <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Poster URL
-          </label>
-
-          <input
-            id="form-poster"
-            type="text"
-            class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Date Added</label>
+            <input type="date" id="form-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Poster URL</label>
+            <input type="text" id="form-poster" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
         </div>
 
-        <div>
-          <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-            Overview
-          </label>
-
-          <textarea
-            id="form-overview"
-            rows="3"
-            class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs resize-none"></textarea>
-        </div>
-
+        <input type="hidden" id="form-id">
+        <input type="hidden" id="form-upc">
+        <input type="hidden" id="form-overview">
         <input type="hidden" id="form-backdrop">
         <input type="hidden" id="form-trailer">
+        <input type="hidden" id="form-rating">
+      </div>
 
-        <div class="flex gap-2 pt-2">
-
-          <button
-            onclick="closeModal()"
-            class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs">
-            Cancel
-          </button>
-
-          <button
-            onclick="saveMovieForm()"
-            class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs">
-            Save Edition
-          </button>
-        </div>
+      <div class="p-4 border-t border-slate-800 flex space-x-2 justify-end">
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancel</button>
+        <button onclick="saveMovieForm()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-amber-500/10">Save Movie</button>
       </div>
     </div>
   </div>
 
   <!-- SETTINGS MODAL -->
-  <div
-    id="settings-modal"
-    class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-
-    <div class="glass-card modal-sheen rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-
-      <div class="sticky top-0 z-10 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <h2 class="font-black text-lg">Settings & Import</h2>
-
-        <button
-          onclick="closeSettingsModal()"
-          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-sm text-white uppercase tracking-wider">App Settings</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <div class="p-4 space-y-5">
-
+      <div class="space-y-4 text-xs">
         <div>
-          <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">
-            Metadata
-          </div>
-
-          <h3 class="font-bold text-sm mt-1">
-            TMDB API Key
-          </h3>
-
-          <p class="text-[11px] text-slate-500 mt-1">
-            Used to automatically retrieve posters, directors, runtime, ratings, studios, trailers and descriptions.
-          </p>
-
-          <input
-            id="tmdb-api-key-input"
-            type="password"
-            placeholder="Paste TMDB API key"
-            class="mt-2 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500">
+          <label class="block font-bold text-slate-400 mb-1 uppercase tracking-wider">TMDB API Key</label>
+          <input type="text" id="tmdb-api-key-input" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-amber-500">
         </div>
 
-        <div class="neon-divider"></div>
-
-        <div>
-          <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">
-            Collection Data
+        <div class="border-t border-slate-800 pt-3 space-y-3">
+          <div>
+            <label class="block font-bold text-violet-300 mb-1 uppercase tracking-wider">Collector Advisor API Key</label>
+            <input type="password" id="openai-api-key-input" placeholder="OpenAI API key" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
+            <p class="text-[9px] text-slate-600 mt-1 leading-relaxed">For this local-only version, the key is stored in this browser's LocalStorage. Do not use this setup on a public website or shared computer.</p>
           </div>
-
-          <h3 class="font-bold text-sm mt-1">
-            Import / Export
-          </h3>
-
-          <p class="text-[11px] text-slate-500 mt-1">
-            Keep a backup of your FilmVault collection as JSON.
-          </p>
-
-          <div class="grid grid-cols-2 gap-2 mt-3">
-
-            <button
-              onclick="exportCollection()"
-              class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2.5 text-xs font-bold">
-              <i class="fa-solid fa-download mr-1"></i>
-              Export JSON
-            </button>
-
-            <label
-              class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2.5 text-xs font-bold text-center cursor-pointer">
-              <i class="fa-solid fa-upload mr-1"></i>
-              Import JSON
-              <input
-                type="file"
-                accept=".json"
-                onchange="importCollection(event)"
-                class="hidden">
-            </label>
+          <div>
+            <label class="block font-bold text-slate-400 mb-1 uppercase tracking-wider">Advisor Model</label>
+            <input type="text" id="openai-model-input" value="gpt-6-luna" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-violet-500">
           </div>
         </div>
 
-        <div class="neon-divider"></div>
+        <div class="space-y-2 border-t border-slate-800 pt-3">
+          <label class="block font-bold text-slate-400 uppercase tracking-wider">CSV Catalog Import</label>
+          <input type="file" id="csv-file-input" accept=".csv" class="w-full bg-slate-950 text-slate-400 rounded-xl p-2 border border-slate-800 text-xs">
+          <button onclick="handleCSVImport()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">Import CSV File</button>
+        </div>
 
-        <div>
-          <div class="text-[10px] uppercase tracking-widest text-amber-500 font-black">
-            Bulk Metadata
-          </div>
-
-          <h3 class="font-bold text-sm mt-1">
-            Enrich Collection
-          </h3>
-
-          <p class="text-[11px] text-slate-500 mt-1">
-            Automatically match titles against TMDB and fill missing metadata. UPC/EAN is used as a fallback.
-          </p>
-
-          <button
-            onclick="runBulkEnrichment()"
-            class="mt-3 w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
-            Enrich Collection
+        <div class="border-t border-slate-800 pt-3">
+          <button onclick="runBulkEnrichment()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center transition shadow-lg shadow-indigo-600/20">
+            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Auto-Enrich Collection
           </button>
         </div>
+      </div>
 
-        <button
-          onclick="saveSettings()"
-          class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-xs">
-          Save Settings
-        </button>
+      <div class="pt-2 text-right">
+        <button onclick="saveSettings()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Save Settings</button>
       </div>
     </div>
   </div>
 
-  <!-- CLEAR MODAL -->
-  <div
-    id="clear-modal"
-    class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-
-    <div class="glass-card modal-sheen rounded-2xl w-full max-w-sm p-5">
-
-      <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-4">
+  <!-- CLEAR COLLECTION SAFEGUARD MODAL -->
+  <div id="clear-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500 text-xl">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
-
-      <h2 class="font-black text-lg">
-        Clear Collection?
-      </h2>
-
-      <p class="text-xs text-slate-400 mt-2">
-        This removes the current FilmVault collection from this browser. Make sure you have an export first.
-      </p>
-
-      <div class="flex gap-2 mt-5">
-
-        <button
-          onclick="closeClearModal()"
-          class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 py-2.5 rounded-xl text-xs font-bold">
-          Cancel
-        </button>
-
-        <button
-          onclick="confirmClearCollection()"
-          class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl text-xs font-black">
-          Clear
-        </button>
+      <div>
+        <h3 class="font-bold text-base text-white">Clear Collection?</h3>
+        <p class="text-xs text-slate-400 mt-1">This action cannot be undone. All imported media titles and metadata will be permanently deleted from local storage.</p>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button onclick="closeClearModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+        <button onclick="confirmClearCollection()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-xs transition shadow-lg shadow-red-600/20">Clear All</button>
       </div>
     </div>
   </div>
 
   <script>
     let collection = [];
-    let currentFormatFilter = 'All';
-    let html5QrCode = null;
+    let currentFormatFilter = 'ALL';
+    let html5QrcodeScanner = null;
+    let activeMovieForModal = null;
 
-    const UPC_CACHE_KEY = 'filmvault_upc_cache';
-    const TMDB_SEARCH_CACHE_KEY = 'filmvault_tmdb_search_cache';
-    const TMDB_DETAILS_CACHE_KEY = 'filmvault_tmdb_details_cache';
+    function initApp() {
+      const stored = localStorage.getItem('filmvault_collection');
+      collection = stored ? JSON.parse(stored) : [];
+      collection.forEach(movie => {
+        if (!movie.publisher && movie.studio && (!movie.tmdbId || detectBoutiqueLabel(movie.studio))) movie.publisher = movie.studio;
+        if (!movie.label) movie.label = detectBoutiqueLabel(movie.publisher, movie.title, movie.upcBrand) || '';
+      });
+      
+      const apiKey = localStorage.getItem('tmdb_api_key') || '';
+      localStorage.setItem('tmdb_api_key', apiKey);
+      document.getElementById('tmdb-api-key-input').value = apiKey;
+      document.getElementById('openai-api-key-input').value = localStorage.getItem('filmvault_openai_api_key') || '';
+      document.getElementById('openai-model-input').value = localStorage.getItem('filmvault_openai_model') || 'gpt-6-luna';
+      loadAdvisorHistory();
+      loadUpcCache();
 
-    const UPC_MIN_INTERVAL_MS = 10000;
-
-    let lastUPCRequestAt = 0;
-
-    let upcCache = {};
-    let tmdbSearchCache = {};
-    let tmdbDetailsCache = {};
-
-    /*
-     * ---------------------------------------------------------
-     * GENERAL HELPERS
-     * ---------------------------------------------------------
-     */
-
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      renderCatalog();
+      updateStats();
     }
 
-    function normalizeBarcode(value) {
-      return String(value || '').replace(/\D/g, '');
+    function saveCollection() {
+      localStorage.setItem('filmvault_collection', JSON.stringify(collection));
+      updateStats();
     }
 
-    function isPlausibleBarcode(value) {
-      const code = normalizeBarcode(value);
-      return code.length >= 8 && code.length <= 14;
-    }
-
-    async function fetchJson(url, options = {}, timeoutMs = 20000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-      try {
-        const response = await fetch(url, {
-          ...options,
-          signal: controller.signal
-        });
-
-        if (!response.ok) {
-          let message = `HTTP ${response.status}`;
-
-          if (response.status === 429) {
-            message = 'Rate limited';
-          }
-
-          throw new Error(message);
-        }
-
-        return await response.json();
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function showToast(message, duration = 2500) {
-      const banner = document.getElementById('toast-banner');
-      const text = document.getElementById('toast-message');
-
-      if (!banner || !text) return;
-
-      text.innerText = message;
-      banner.classList.remove('hidden');
-
-      if (showToast._timer) clearTimeout(showToast._timer);
-
-      if (duration > 0) {
-        showToast._timer = setTimeout(() => {
-          banner.classList.add('hidden');
-        }, duration);
-      }
+    function showToast(msg) {
+      const toast = document.getElementById('toast-banner');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.remove('hidden');
     }
 
     function hideToast() {
-      const banner = document.getElementById('toast-banner');
-      if (banner) banner.classList.add('hidden');
+      document.getElementById('toast-banner').classList.add('hidden');
     }
 
-    /*
-     * ---------------------------------------------------------
-     * TITLE NORMALIZATION
-     * ---------------------------------------------------------
-     */
+    function switchTab(tab) {
+      ['catalog', 'scanner', 'upgrades', 'advisor'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).classList.remove('border-amber-500', 'text-amber-400');
+        document.getElementById(`tab-btn-${t}`).classList.add('border-transparent');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tab}`).classList.add('border-amber-500', 'text-amber-400');
+      if (tab !== 'scanner' && html5QrcodeScanner) stopCameraScanner();
+      if (tab === 'upgrades') renderUpgrades();
+    }
 
+    let currentEraFilter = 'ALL';
+    let currentSortOrder = 'title';
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    function getReleaseYear(movie) {
+      const value = movie.releaseDate || movie.publishDate || '';
+      const match = String(value).match(/(19|20)\d{2}/);
+      return match ? parseInt(match[0], 10) : null;
+    }
+
+    const BOUTIQUE_LABELS = [
+      ['Criterion Collection', /criterion(?: collection)?/i],
+      ['Arrow Video', /\barrow(?: video)?\b/i],
+      ['Shout! Factory', /shout!? ?factory/i],
+      ['Scream Factory', /scream factory/i],
+      ['Vinegar Syndrome', /vinegar syndrome/i],
+      ['Severin Films', /\bseverin(?: films)?\b/i],
+      ['Second Sight', /second sight/i],
+      ['88 Films', /\b88 films\b/i],
+      ['Kino Lorber', /kino(?: lorber)?/i],
+      ['Indicator', /\bindicator\b/i],
+      ['Radiance Films', /radiance films?/i],
+      ['Blue Underground', /blue underground/i],
+      ['Synapse Films', /synapse films?/i],
+      ['Umbrella Entertainment', /umbrella entertainment/i],
+      ['Eureka', /\beureka(?: entertainment)?\b/i],
+      ['Warner Archive', /warner archive/i],
+      ['Imprint', /\bimprint\b/i],
+      ['Shout Select', /shout select/i],
+      ['MVD', /\bmvd\b/i],
+      ['Mill Creek', /mill creek/i],
+      ['RLJ Entertainment', /rlj entertainment/i],
+      ['Dark Sky Films', /dark sky films?/i],
+      ['Arrow Academy', /arrow academy/i],
+      ['Paramount Presents', /paramount presents/i],
+      ['Universal 4K', /universal(?: pictures)? 4k/i]
+    ];
+
+    function detectBoutiqueLabel(...values) {
+      const text = values.filter(Boolean).join(' ');
+      for (const [label, re] of BOUTIQUE_LABELS) {
+        if (re.test(text)) return label;
+      }
+      return '';
+    }
+
+    function isBoutiqueLabel(movie) {
+      return !!(movie.label || detectBoutiqueLabel(movie.publisher, movie.studio, movie.title, movie.upcBrand));
+    }
+
+    function setEraFilter(era) {
+      currentEraFilter = era;
+      document.getElementById('filter-era-80s').classList.toggle('bg-amber-500/15', era === '80s');
+      document.getElementById('filter-era-80s').classList.toggle('text-amber-300', era === '80s');
+      document.getElementById('filter-era-clear').classList.toggle('hidden', era === 'ALL');
+      renderCatalog();
+    }
+
+    function setSortOrder(order) { currentSortOrder = order; renderCatalog(); }
+
+    function surpriseMe() {
+      const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+      let candidates = collection.filter(m => {
+        if (currentFormatFilter !== 'ALL' && m.format !== currentFormatFilter) return false;
+        if (currentEraFilter === '80s' && getReleaseYear(m) !== null && (getReleaseYear(m) < 1980 || getReleaseYear(m) > 1989)) return false;
+        if (searchVal && !`${m.title} ${m.director || ''} ${m.studio || ''} ${m.upc || ''}`.toLowerCase().includes(searchVal)) return false;
+        return true;
+      });
+      if (!candidates.length) candidates = collection.slice();
+      if (!candidates.length) return;
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      openDetailModal(pick.id);
+    }
+
+    // Catalog-title normalization. The CSV contains release/edition metadata inside
+    // titles, so enrichment should search for the underlying film rather than the
+    // retail listing text.
     const TITLE_META_PATTERNS = [
       /\b(?:4K|UHD|ULTRA\s*HD|BLU[- ]?RAY|BLURAY|DVD|BD|3D)\b/i,
       /\b(?:WIDESCREEN|FULL\s*SCREEN|FULLSCREEN|PAN\s*&?\s*SCAN)\b/i,
       /\b(?:SPECIAL|LIMITED|COLLECTOR'?S|COLLECTORS|ANNIVERSARY|ULTIMATE|DELUXE|IMMACULATE|STANDARD)\s+(?:EDITION|RELEASE|COLLECTION)\b/i,
-      /\b(?:DIRECTOR'?S|THEATRICAL|EXTENDED|UNRATED|RATED)\s+(?:CUT|VERSION|EDITION)\b/i,
+      /\b(?:DIRECTOR'?S|THEATRICAL|EXTENDED|UNRATED|UNRATED|RATED)\s+(?:CUT|VERSION|EDITION)\b/i,
       /\b(?:TWO|THREE|FOUR|5|FIVE|10)[- ]DISC\b/i,
       /\b(?:COMBO|PACKAGING|DIGITAL(?:\s+HD)?|ULTRAVIOLET|FANDANGO|CASH|BONUS|COPY|DISC|IMPORT MOVIE|EUROPEAN FORMAT|ZONE\s*[A-Z0-9-]+)\b/i,
       /\b(?:WBFE|RPKG|WS\/BD|BD\/DIGITAL|BD\/DVD|DVD\/BD)\b/i
@@ -898,162 +650,240 @@
 
     function cleanTitle(rawStr) {
       if (!rawStr) return '';
-
       let str = String(rawStr).trim();
-
       str = str.replace(/^['"]+|['"]+$/g, '').trim();
 
+      // Remove bracketed retail metadata repeatedly.
       str = str.replace(/\s*\[[^\]]*\]\s*/g, ' ').trim();
 
+      // Remove trailing parenthetical retail metadata repeatedly. This handles:
+      // "Donnie Darko (Widescreen Edition)", "The Hobbit (...)(Blu-ray)", etc.
       for (let i = 0; i < 5; i++) {
         const before = str;
-
-        str = str.replace(
-          /\s*\(([^()]*)\)\s*$/g,
-          (full, inner) => {
-            const text = String(inner).trim();
-
-            if (/^(?:19|20)\d{2}$/.test(text)) {
-              return full;
-            }
-
-            return TITLE_META_PATTERNS.some(re => re.test(text)) ||
-              /edition|version|cut|disc|digital|blu|widescreen|fullscreen|screen|anniversary|collection|packaging|copy|format|r-rated/i.test(text)
-              ? ''
-              : full;
-          }
-        ).trim();
-
+        str = str.replace(/\s*\(([^()]*)\)\s*$/g, (full, inner) => {
+          const text = String(inner).trim();
+          if (/^(?:19|20)\d{2}$/.test(text)) return full; // keep a release year
+          return TITLE_META_PATTERNS.some(re => re.test(text)) ||
+                 /edition|version|cut|disc|digital|blu|widescreen|fullscreen|screen|anniversary|collection|packaging|copy|format|r-rated/i.test(text)
+            ? '' : full;
+        }).trim();
         if (str === before) break;
       }
 
+      // Remove unclosed trailing metadata fragments.
       str = str.replace(/\s*\([^)]*$/g, '').trim();
 
+      // Strip common metadata after the title, including long retail suffixes.
+      // Repeat because many listings contain several descriptors in a row.
       for (let i = 0; i < 5; i++) {
         const before = str;
-
         str = str
-          .replace(
-            /\s*[-–—]\s*(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:widescreen|full\s*screen|fullscreen|unrated|extended|director'?s\s+cut|theatrical\s+cut|special\s+edition|limited\s+edition|collector'?s\s+edition).*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:4k|uhd|ultra\s*hd|blu[- ]?ray|bluray|dvd|bd)(?:\s*[+/&,-].*)?$/i,
-            ''
-          )
-          .replace(
-            /\s+\((?:19|20)\d{2}\)\s*$/i,
-            ''
-          )
+          .replace(/\s*[-–—]\s*(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i, '')
+          .replace(/\s+(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i, '')
+          .replace(/\s+(?:widescreen|full\s*screen|fullscreen|unrated|extended|director'?s\s+cut|theatrical\s+cut|special\s+edition|limited\s+edition|collector'?s\s+edition).*$/i, '')
+          .replace(/\s+(?:4k|uhd|ultra\s*hd|blu[- ]?ray|bluray|dvd|bd)(?:\s*[+/&,-].*)?$/i, '')
+          .replace(/\s+\((?:19|20)\d{2}\)\s*$/i, '')
           .trim();
-
         if (str === before) break;
       }
 
+      // Remove a few common retail descriptors that appear after a title without punctuation.
       str = str.replace(/\s+(?:wbfe|rpkg|ws\/bd)$/i, '').trim();
 
-      str = str.replace(
-        /^([^,]+),\s*(The|A|An)\b/i,
-        '$2 $1'
-      ).trim();
-
+      // Normalize inverted catalog titles: "Goonies, The" -> "The Goonies".
+      str = str.replace(/^([^,]+),\s*(The|A|An)\b/i, '$2 $1').trim();
       str = str.replace(/\s+/g, ' ').trim();
-
       return str;
     }
 
-    function titleCandidates(rawTitle) {
-      const original = String(rawTitle || '').trim();
-      const candidates = [];
+    function parseFormatString(rawFormat, titleContext = '') {
+      const combined = `${rawFormat || ''} ${titleContext || ''}`.toLowerCase();
+      if (combined.includes('4k') || combined.includes('uhd') || combined.includes('ultra hd') || combined.includes('2160p')) return '4K UHD';
+      if (combined.includes('dvd')) return 'DVD';
+      if (combined.includes('blu') || combined.includes('bd') || combined.includes('1080p')) return 'Blu-ray';
+      return 'Blu-ray';
+    }
 
-      const add = value => {
-        const v = cleanTitle(value);
+    function needsEnrichment(movie) {
+      const currentKey = normalizeMatchTitle(movie.title || '');
+      if (movie.enrichmentCheckedAt && movie.enrichmentTitleKey === currentKey) return false;
+      const needsPoster = !movie.poster || movie.poster.trim() === '' || movie.poster.includes('placeholder');
+      const needsDirector = !movie.director || movie.director.trim() === '' ||
+        /^(unknown director|n\/a|various)$/i.test(movie.director.trim());
+      const needsOverview = !movie.overview || movie.overview.trim() === '' ||
+        movie.overview.toLowerCase() === 'no synopsis available.';
+      const needsLabel = !!movie.publisher && !movie.label;
+      return needsPoster || needsDirector || needsOverview || needsLabel;
+    }
 
-        if (!v) return;
+    function renderCatalog() {
+      const grid = document.getElementById('catalog-grid');
+      const emptyState = document.getElementById('empty-catalog');
+      const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+      grid.innerHTML = '';
 
-        const key = normalizeMatchTitle(v);
-
-        if (!key) return;
-
-        if (!candidates.some(c => c.key === key)) {
-          candidates.push({
-            title: v,
-            key
-          });
+      let filtered = collection.filter(movie => {
+        if (currentFormatFilter !== 'ALL' && movie.format !== currentFormatFilter) return false;
+        if (currentEraFilter === '80s') {
+          const y = getReleaseYear(movie);
+          if (y !== null && (y < 1980 || y > 1989)) return false;
+          if (y === null) return false;
         }
-      };
+        if (searchVal) {
+          const haystack = `${movie.title} ${movie.director || ''} ${movie.studio || ''} ${movie.publisher || ''} ${movie.upc || ''}`.toLowerCase();
+          if (!haystack.includes(searchVal)) return false;
+        }
+        return true;
+      });
 
-      add(original);
+      filtered.sort((a,b) => {
+        if (currentSortOrder === 'added') return String(b.datePurchased || '').localeCompare(String(a.datePurchased || ''));
+        if (currentSortOrder === 'year') return (getReleaseYear(b) || 0) - (getReleaseYear(a) || 0);
+        if (currentSortOrder === 'format') return String(a.format || '').localeCompare(String(b.format || '')) || a.title.localeCompare(b.title);
+        return String(a.title || '').localeCompare(String(b.title || ''));
+      });
 
-      let stripped = original;
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
 
-      for (let i = 0; i < 8; i++) {
-        const before = stripped;
+      filtered.forEach(m => {
+        const card = document.createElement('div');
+        card.className = "poster-card bg-slate-950/80 border border-slate-800/90 rounded-2xl overflow-hidden flex flex-col group relative cursor-pointer hover:border-amber-500/50 transition duration-300 transform hover:-translate-y-1 scanline-card";
+        card.onclick = () => openDetailModal(m.id);
+        const poster = m.poster || '';
+        const year = getReleaseYear(m);
+        const boutique = isBoutiqueLabel(m);
+        const missing = needsEnrichment(m);
+        const title = escapeHtml(m.title);
+        const director = escapeHtml(m.director || 'Unknown Director');
+        const studio = escapeHtml(m.studio || '');
+        const posterHtml = poster
+          ? `<img src="${escapeHtml(poster)}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">`
+          : `<div class="poster-fallback w-full h-full flex flex-col items-center justify-center p-4 text-center"><i class="fa-solid fa-film text-3xl text-slate-700 mb-2"></i><span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Art Missing</span></div>`;
+        card.innerHTML = `
+          <div class="relative aspect-[2/3] w-full bg-slate-950 overflow-hidden">
+            ${posterHtml}
+            <div class="absolute inset-x-0 top-0 p-2 flex justify-between items-start gap-2">
+              <span class="bg-amber-500 text-slate-950 font-black text-[8px] uppercase px-2 py-1 rounded-md shadow">${escapeHtml(m.format || 'Blu-ray')}</span>
+              ${m.rating ? `<span class="bg-slate-950/85 backdrop-blur text-amber-300 font-bold text-[9px] px-1.5 py-1 rounded-md border border-white/10"><i class="fa-solid fa-star text-[8px] mr-1"></i>${escapeHtml(m.rating)}</span>` : ''}
+            </div>
+            <div class="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
+              <div class="flex flex-wrap gap-1">
+                ${boutique ? `<span class="bg-violet-500/90 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-1 rounded">Boutique</span>` : ''}
+                ${year ? `<span class="bg-black/75 text-slate-200 text-[7px] font-black px-1.5 py-1 rounded">${year}</span>` : ''}
+              </div>
+              ${missing ? `<span title="Metadata may need enrichment" class="w-5 h-5 rounded-full bg-red-500/90 text-white flex items-center justify-center shadow"><i class="fa-solid fa-circle-exclamation text-[9px]"></i></span>` : ''}
+            </div>
+          </div>
+          <div class="p-3 flex-1 flex flex-col justify-between bg-gradient-to-b from-slate-900/80 to-slate-950">
+            <div>
+              <h4 class="font-black text-[11px] text-white line-clamp-2 leading-snug">${title}</h4>
+              <p class="text-[9px] text-slate-500 line-clamp-1 mt-1 font-medium">${director}</p>
+            </div>
+            ${studio ? `<p class="text-[8px] text-amber-500/70 uppercase tracking-widest font-bold mt-2 line-clamp-1">${studio}</p>` : '<span class="text-[8px] text-slate-700 mt-2">&nbsp;</span>'}
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
 
-        stripped = stripped
-          .replace(/\s*\[[^\]]*\]\s*$/g, '')
-          .replace(
-            /\s*\([^)]*\)\s*$/g,
-            m => /(?:19|20)\d{2}/.test(m) ? m : ''
-          )
-          .replace(
-            /\s*[-–—]\s*(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:widescreen|full\s*screen|fullscreen|unrated|extended|director'?s\s+cut|theatrical\s+cut).*$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:4k|uhd|ultra\s*hd|blu[- ]?ray|bluray|dvd|bd)(?:\s*[+/&,-].*)?$/i,
-            ''
-          )
-          .replace(
-            /\s+(?:two|three|four|5|five)[- ]disc.*$/i,
-            ''
-          )
-          .trim();
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-        if (stripped === before) break;
+    function normalizeBarcode(value) {
+      return String(value || '').trim().replace(/[\s-]/g, '');
+    }
+
+    function isPlausibleBarcode(value) {
+      return /^\d{8,14}$/.test(normalizeBarcode(value));
+    }
+
+    async function fetchJson(url, options = {}, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            ...(options.headers || {})
+          }
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (_) {}
+
+        if (!response.ok) {
+          const code = data && data.code ? data.code : `HTTP_${response.status}`;
+          const message = data && data.message ? data.message : response.statusText;
+          const err = new Error(`${code}: ${message}`);
+          err.status = response.status;
+          err.apiCode = code;
+          throw err;
+        }
+        return data;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    const UPC_MIN_INTERVAL_MS = 10000;
+    let lastUpcLookupAt = 0;
+    let upcCache = {};
+
+    function loadUpcCache() {
+      try {
+        upcCache = JSON.parse(localStorage.getItem('filmvault_upc_cache') || '{}') || {};
+      } catch (_) {
+        upcCache = {};
+      }
+    }
+
+    function saveUpcCache() {
+      try {
+        localStorage.setItem('filmvault_upc_cache', JSON.stringify(upcCache));
+      } catch (_) {}
+    }
+
+    async function lookupUPC(barcode) {
+      const code = normalizeBarcode(barcode);
+      if (!isPlausibleBarcode(code)) {
+        throw new Error('Enter a valid UPC/EAN barcode (8–14 digits).');
       }
 
-      add(stripped);
+      loadUpcCache();
+      if (Object.prototype.hasOwnProperty.call(upcCache, code)) {
+        return upcCache[code];
+      }
 
-      add(
-        stripped.replace(
-          /^4\s+Film\s+Favorites:\s*/i,
-          ''
-        )
-      );
+      const wait = UPC_MIN_INTERVAL_MS - (Date.now() - lastUpcLookupAt);
+      if (wait > 0) await sleep(wait);
+      lastUpcLookupAt = Date.now();
 
-      add(
-        stripped.replace(
-          /^([^,]+),\s*(The|A|An)\b/i,
-          '$2 $1'
-        )
-      );
-
-      return candidates;
+      try {
+        const data = await fetchJson(
+          `https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(code)}`
+        );
+        const item = data && data.items && data.items.length ? data.items[0] : null;
+        upcCache[code] = item || null;
+        saveUpcCache();
+        return item;
+      } catch (err) {
+        if (err.status === 429 || err.apiCode === 'TOO_FAST' || err.apiCode === 'EXCEED_LIMIT') {
+          throw new Error('UPCitemdb rate limit reached. Wait before trying another lookup.');
+        }
+        if (err.status === 404 || err.apiCode === 'NOT_FOUND') return null;
+        throw err;
+      }
     }
 
     function normalizeMatchTitle(title) {
       return cleanTitle(String(title || ''))
-        .replace(
-          /\b(?:blu[- ]?ray|bluray|4k|uhd|ultra\s*hd|dvd|steelbook|edition|limited|special|collector'?s|widescreen|fullscreen)\b/gi,
-          ' '
-        )
+        .replace(/\b(?:blu[- ]?ray|bluray|4k|uhd|ultra\s*hd|dvd|steelbook|edition|limited|special|collector'?s|widescreen|fullscreen)\b/gi, ' ')
         .replace(/[’'`]/g, '')
         .replace(/[^\w\s:]/g, ' ')
         .replace(/\s+/g, ' ')
@@ -1061,236 +891,73 @@
         .toLowerCase();
     }
 
-    /*
-     * ---------------------------------------------------------
-     * STORAGE
-     * ---------------------------------------------------------
-     */
+    function titleCandidates(rawTitle) {
+      const original = String(rawTitle || '').trim();
+      const candidates = [];
+      const add = value => {
+        const v = cleanTitle(value);
+        if (!v) return;
+        const key = normalizeMatchTitle(v);
+        if (!key) return;
+        if (!candidates.some(c => c.key === key)) candidates.push({ title: v, key });
+      };
 
-    function saveCollection() {
-      localStorage.setItem(
-        'filmvault_collection',
-        JSON.stringify(collection)
-      );
+      add(original);
 
-      updateStats();
+      // Aggressively remove common retail suffixes from a copy of the original.
+      let stripped = original;
+      for (let i = 0; i < 8; i++) {
+        const before = stripped;
+        stripped = stripped
+          .replace(/\s*\[[^\]]*\]\s*$/g, '')
+          .replace(/\s*\([^)]*\)\s*$/g, m => /(?:19|20)\d{2}/.test(m) ? m : '')
+          .replace(/\s*[-–—]\s*(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i, '')
+          .replace(/\s+(?:collector'?s|limited|special|anniversary|ultimate|deluxe|standard)\s+edition.*$/i, '')
+          .replace(/\s+(?:widescreen|full\s*screen|fullscreen|unrated|extended|director'?s\s+cut|theatrical\s+cut).*$/i, '')
+          .replace(/\s+(?:4k|uhd|ultra\s*hd|blu[- ]?ray|bluray|dvd|bd)(?:\s*[+/&,-].*)?$/i, '')
+          .replace(/\s+(?:two|three|four|5|five)[- ]disc.*$/i, '')
+          .trim();
+        if (stripped === before) break;
+      }
+      add(stripped);
+
+      // Remove a leading retail collection label only when it clearly isn't part of a title.
+      add(stripped.replace(/^4\s+Film\s+Favorites:\s*/i, ''));
+
+      // Inverted catalog forms.
+      add(stripped.replace(/^([^,]+),\s*(The|A|An)\b/i, '$2 $1'));
+
+      return candidates;
     }
 
-    function loadCollection() {
-      try {
-        const saved = localStorage.getItem('filmvault_collection');
-
-        if (saved) {
-          collection = JSON.parse(saved);
-        }
-      } catch (err) {
-        console.error('Failed loading collection:', err);
-        collection = [];
-      }
-    }
-
-    function loadTMDBCache() {
-      try {
-        tmdbSearchCache = JSON.parse(
-          localStorage.getItem(TMBD_SEARCH_CACHE_KEY) || '{}'
-        );
-      } catch {
-        tmdbSearchCache = {};
-      }
-
-      try {
-        tmdbDetailsCache = JSON.parse(
-          localStorage.getItem(TMDB_DETAILS_CACHE_KEY) || '{}'
-        );
-      } catch {
-        tmdbDetailsCache = {};
-      }
-    }
-
-    function saveTMDBCache() {
-      try {
-        localStorage.setItem(
-          TMDB_SEARCH_CACHE_KEY,
-          JSON.stringify(tmdbSearchCache)
-        );
-      } catch (err) {
-        console.warn('Could not save TMDB search cache:', err);
-      }
-
-      try {
-        localStorage.setItem(
-          TMDB_DETAILS_CACHE_KEY,
-          JSON.stringify(tmdbDetailsCache)
-        );
-      } catch (err) {
-        console.warn('Could not save TMDB details cache:', err);
-      }
-    }
-
-    function loadUPCCache() {
-      try {
-        upcCache = JSON.parse(
-          localStorage.getItem(UPC_CACHE_KEY) || '{}'
-        );
-      } catch {
-        upcCache = {};
-      }
-    }
-
-    function saveUPCCache() {
-      try {
-        localStorage.setItem(
-          UPC_CACHE_KEY,
-          JSON.stringify(upcCache)
-        );
-      } catch (err) {
-        console.warn('Could not save UPC cache:', err);
-      }
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * FORMAT / LABEL HELPERS
-     * ---------------------------------------------------------
-     */
-
-    function detectFormat(title, publisher = '') {
-      const text = `${title || ''} ${publisher || ''}`.toLowerCase();
-
-      if (
-        /\b4k\b|\buhd\b|ultra\s*hd/.test(text)
-      ) {
-        return '4K UHD';
-      }
-
-      if (
-        /\bblu[- ]?ray\b|\bbluray\b|\bbd\b/.test(text)
-      ) {
-        return 'Blu-ray';
-      }
-
-      if (/\bdvd\b/.test(text)) {
-        return 'DVD';
-      }
-
-      return 'Other';
-    }
-
-    function detectPackaging(title) {
-      const text = String(title || '').toLowerCase();
-
-      if (/steelbook/.test(text)) return 'Steelbook';
-      if (/slipcover|slip case|with slip/.test(text)) return 'Slipcover';
-      if (/digipak|digipack/.test(text)) return 'Digipak';
-      if (/box set|collection|trilogy|quadrilogy/.test(text)) return 'Box Set';
-
-      return 'Standard Case';
-    }
-
-    function isBoutiqueLabel(movie) {
-      const label = String(movie.studio || '').toLowerCase();
-
-      return [
-        'criterion',
-        'arrow',
-        'shout',
-        'vinegar syndrome',
-        '88 films',
-        'second sight',
-        'kino lorber',
-        'indicator',
-        'umbrella',
-        'imprint',
-        'synapse',
-        'scream factory',
-        'severin'
-      ].some(x => label.includes(x));
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * TMDB
-     * ---------------------------------------------------------
-     */
-
-    function getTMDBApiKey() {
-      return localStorage.getItem('tmdb_api_key') || '';
-    }
-
-    function chooseBestTMDBResult(results, rawTitle, releaseYear = '') {
-      if (!Array.isArray(results) || !results.length) {
-        return null;
-      }
-
-      const target = normalizeMatchTitle(rawTitle);
-
-      const targetWords = target
-        .split(/\s+/)
-        .filter(Boolean);
-
+    function chooseBestTMDBResult(results, query, releaseYear = '') {
+      if (!Array.isArray(results) || !results.length) return null;
+      const target = normalizeMatchTitle(query);
+      const year = String(releaseYear || extractTitleYear(query) || '').slice(0, 4);
       let best = null;
       let bestScore = -Infinity;
 
-      results.forEach(movie => {
-        const candidate = normalizeMatchTitle(movie.title || '');
-
-        if (!candidate) return;
-
+      for (const movie of results.slice(0, 20)) {
+        const candidate = normalizeMatchTitle(movie.title || movie.original_title || '');
+        if (!candidate) continue;
         let score = 0;
+        if (candidate === target) score += 140;
+        else if (candidate.startsWith(target) || target.startsWith(candidate)) score += 65;
+        else if (candidate.includes(target) || target.includes(candidate)) score += 40;
 
-        if (candidate === target) {
-          score += 140;
-        }
-
-        if (
-          candidate.startsWith(target) ||
-          target.startsWith(candidate)
-        ) {
-          score += 65;
-        }
-
-        if (
-          candidate.includes(target) ||
-          target.includes(candidate)
-        ) {
-          score += 40;
-        }
-
-        const candidateWords = candidate
-          .split(/\s+/)
-          .filter(Boolean);
-
-        const overlap = targetWords.filter(word =>
-          candidateWords.includes(word)
-        ).length;
-
+        const targetWords = new Set(target.split(/\s+/).filter(w => w.length > 1));
+        const candidateWords = new Set(candidate.split(/\s+/).filter(w => w.length > 1));
+        let overlap = 0;
+        targetWords.forEach(word => { if (candidateWords.has(word)) overlap++; });
         score += overlap * 6;
+        if (targetWords.size) score += (overlap / targetWords.size) * 25;
 
-        if (targetWords.length) {
-          score +=
-            (overlap / targetWords.length) * 25;
+        const candidateYear = String(movie.release_date || '').slice(0, 4);
+        if (year && candidateYear) {
+          if (candidateYear === year) score += 35;
+          else if (Math.abs(Number(candidateYear) - Number(year)) <= 1) score += 10;
+          else score -= 15;
         }
-
-        const movieYear = String(
-          movie.release_date || ''
-        ).slice(0, 4);
-
-        if (releaseYear && movieYear) {
-          const diff =
-            Math.abs(
-              Number(movieYear) -
-              Number(releaseYear)
-            );
-
-          if (diff === 0) {
-            score += 35;
-          } else if (diff === 1) {
-            score += 10;
-          } else {
-            score -= 15;
-          }
-        }
-
         if (movie.poster_path) score += 2;
         if (movie.overview) score += 1;
 
@@ -1298,1547 +965,654 @@
           bestScore = score;
           best = movie;
         }
-      });
-
-      if (bestScore < 45) {
-        return null;
       }
 
-      return best;
+      // Don't accept a wildly unrelated result just because TMDB returned something.
+      return bestScore >= 45 ? best : null;
+    }
+
+    let tmdbSearchCache = {};
+    let tmdbDetailsCache = {};
+
+    function loadTMDBCache() {
+      try {
+        tmdbSearchCache = JSON.parse(localStorage.getItem('filmvault_tmdb_search_cache') || '{}') || {};
+        tmdbDetailsCache = JSON.parse(localStorage.getItem('filmvault_tmdb_details_cache') || '{}') || {};
+      } catch (_) {
+        tmdbSearchCache = {};
+        tmdbDetailsCache = {};
+      }
+    }
+
+    function saveTMDBCache() {
+      try {
+        localStorage.setItem('filmvault_tmdb_search_cache', JSON.stringify(tmdbSearchCache));
+        localStorage.setItem('filmvault_tmdb_details_cache', JSON.stringify(tmdbDetailsCache));
+      } catch (_) {}
     }
 
     async function searchTMDBMovie(query, releaseYear = '') {
-      const apiKey = getTMDBApiKey();
+      const apiKey = localStorage.getItem('tmdb_api_key');
+      if (!apiKey) throw new Error('No TMDB API key is configured.');
+      loadTMDBCache();
 
-      if (!apiKey) {
-        throw new Error('TMDB API key not configured.');
+      const year = String(releaseYear || extractTitleYear(query) || '').slice(0, 4);
+      const key = `${normalizeMatchTitle(query)}|${year}`;
+      if (Object.prototype.hasOwnProperty.call(tmdbSearchCache, key)) return tmdbSearchCache[key];
+
+      const cleaned = cleanTitle(query);
+      if (!cleaned) return null;
+
+      const makeUrl = useYear => {
+        let url = `https://api.themoviedb.org/3/search/movie?api_key=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(cleaned)}&include_adult=false`;
+        if (useYear && /^\d{4}$/.test(year)) url += `&primary_release_year=${year}`;
+        return url;
+      };
+
+      let data = await fetchJson(makeUrl(true));
+      let result = chooseBestTMDBResult(data && data.results, cleaned, year);
+
+      // A library publish date can be the disc/reissue date rather than the
+      // movie's release year. Retry the exact title without year restriction.
+      if (!result && year) {
+        data = await fetchJson(makeUrl(false));
+        result = chooseBestTMDBResult(data && data.results, cleaned, year);
       }
 
-      const key =
-        `${normalizeMatchTitle(query)}|${releaseYear || ''}`;
-
-      if (tmdbSearchCache[key]) {
-        return tmdbSearchCache[key];
-      }
-
-      let url =
-        `https://api.themoviedb.org/3/search/movie` +
-        `?api_key=${encodeURIComponent(apiKey)}` +
-        `&query=${encodeURIComponent(query)}` +
-        `&include_adult=false`;
-
-      if (releaseYear) {
-        url +=
-          `&primary_release_year=${encodeURIComponent(releaseYear)}`;
-      }
-
-      const data = await fetchJson(url);
-
-      const results = Array.isArray(data.results)
-        ? data.results
-        : [];
-
-      tmdbSearchCache[key] = results;
+      tmdbSearchCache[key] = result || null;
       saveTMDBCache();
-
-      return results;
+      return result;
     }
 
     async function resolveTMDBMovie(rawTitle, releaseYear = '') {
       const candidates = titleCandidates(rawTitle);
-
       for (const candidate of candidates) {
         try {
-          const results = await searchTMDBMovie(
-            candidate.title,
-            releaseYear
-          );
-
-          const best = chooseBestTMDBResult(
-            results,
-            candidate.title,
-            releaseYear
-          );
-
-          if (best) {
-            return best;
-          }
+          const result = await searchTMDBMovie(candidate.title, releaseYear || extractTitleYear(candidate.title));
+          if (result) return result;
         } catch (err) {
-          console.warn(
-            'TMDB search failed for',
-            candidate.title,
-            err
-          );
+          console.warn(`TMDB search failed for "${candidate.title}":`, err);
         }
       }
-
       return null;
     }
 
     async function fetchMovieDetailsFromTMDB(movieId) {
-      if (!movieId) return null;
-
-      if (tmdbDetailsCache[movieId]) {
-        return tmdbDetailsCache[movieId];
-      }
-
-      const apiKey = getTMDBApiKey();
-
-      if (!apiKey) {
-        throw new Error('TMDB API key not configured.');
-      }
-
-      const url =
-        `https://api.themoviedb.org/3/movie/${movieId}` +
-        `?api_key=${encodeURIComponent(apiKey)}` +
-        `&append_to_response=credits,videos`;
-
-      const data = await fetchJson(url);
-
-      tmdbDetailsCache[movieId] = data;
-      saveTMDBCache();
-
-      return data;
-    }
-
-    function extractDirector(details) {
-      const crew =
-        details?.credits?.crew || [];
-
-      const director =
-        crew.find(person =>
-          person.job === 'Director'
-        );
-
-      return director?.name || '';
-    }
-
-    function extractStudio(details) {
-      const companies =
-        details?.production_companies || [];
-
-      return companies[0]?.name || '';
-    }
-
-    function extractTrailer(details) {
-      const videos =
-        details?.videos?.results || [];
-
-      const youtube =
-        videos.filter(v =>
-          v.site === 'YouTube'
-        );
-
-      const trailer =
-        youtube.find(v =>
-          /trailer/i.test(v.type)
-        ) ||
-        youtube.find(v =>
-          /teaser/i.test(v.type)
-        );
-
-      return trailer
-        ? `https://www.youtube.com/watch?v=${trailer.key}`
-        : '';
-    }
-
-    function fillFormWithDetails(details) {
-      if (!details) return;
-
-      document.getElementById('form-title').value =
-        details.title || '';
-
-      document.getElementById('form-director').value =
-        extractDirector(details);
-
-      document.getElementById('form-studio').value =
-        extractStudio(details);
-
-      document.getElementById('form-length').value =
-        details.runtime
-          ? `${details.runtime} min`
-          : '';
-
-      document.getElementById('form-poster').value =
-        details.poster_path
-          ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
-          : '';
-
-      document.getElementById('form-backdrop').value =
-        details.backdrop_path
-          ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}`
-          : '';
-
-      document.getElementById('form-overview').value =
-        details.overview || '';
-
-      document.getElementById('form-rating').value =
-        details.vote_average
-          ? Number(details.vote_average).toFixed(1)
-          : '';
-
-      document.getElementById('form-trailer').value =
-        extractTrailer(details);
-
-      const format =
-        detectFormat(
-          document.getElementById('form-title').value
-        );
-
-      if (format !== 'Other') {
-        document.getElementById('form-format').value =
-          format;
-      }
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * UPC ITEM DB
-     * ---------------------------------------------------------
-     */
-
-    async function waitForUPCSlot() {
-      const now = Date.now();
-
-      const wait =
-        UPC_MIN_INTERVAL_MS -
-        (now - lastUPCRequestAt);
-
-      if (wait > 0) {
-        await sleep(wait);
-      }
-
-      lastUPCRequestAt = Date.now();
-    }
-
-    async function lookupUPC(upc) {
-      const code = normalizeBarcode(upc);
-
-      if (!isPlausibleBarcode(code)) {
-        return null;
-      }
-
-      if (upcCache[code]) {
-        return upcCache[code];
-      }
-
-      await waitForUPCSlot();
-
-      const url =
-        `https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(code)}`;
+      const apiKey = localStorage.getItem('tmdb_api_key');
+      if (!apiKey) return null;
+      loadTMDBCache();
+      const cacheKey = String(movieId);
+      if (Object.prototype.hasOwnProperty.call(tmdbDetailsCache, cacheKey)) return tmdbDetailsCache[cacheKey];
 
       try {
-        const data = await fetchJson(url);
-
-        const result =
-          data?.items?.[0] || null;
-
-        upcCache[code] = result;
-        saveUPCCache();
-
-        return result;
-      } catch (err) {
-        console.warn(
-          'UPC lookup failed:',
-          code,
-          err
+        const data = await fetchJson(
+          `https://api.themoviedb.org/3/movie/${movieId}?api_key=${encodeURIComponent(apiKey)}&append_to_response=credits,videos`
         );
 
+        let director = '';
+        if (data.credits && data.credits.crew) {
+          const dirObj = data.credits.crew.find(p => p.job === 'Director');
+          if (dirObj) director = dirObj.name;
+        }
+        let studio = '';
+        if (data.production_companies && data.production_companies.length) studio = data.production_companies[0].name;
+        let trailerKey = '';
+        if (data.videos && data.videos.results) {
+          const trailer = data.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') ||
+                          data.videos.results.find(v => v.site === 'YouTube');
+          if (trailer) trailerKey = trailer.key;
+        }
+
+        const details = {
+          tmdbId: data.id,
+          title: data.title,
+          poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '',
+          backdrop: data.backdrop_path ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` : '',
+          director,
+          studio,
+          overview: data.overview || '',
+          trailer: trailerKey,
+          rating: data.vote_average ? data.vote_average.toFixed(1) : '',
+          length: data.runtime ? `${data.runtime} min` : '',
+          releaseDate: data.release_date || ''
+        };
+        tmdbDetailsCache[cacheKey] = details;
+        saveTMDBCache();
+        return details;
+      } catch (err) {
+        console.warn('TMDB details lookup failed:', err);
         return null;
       }
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * ENRICHMENT
-     * ---------------------------------------------------------
-     */
-
-    function needsEnrichment(movie) {
-      const titleKey =
-        normalizeMatchTitle(movie.title);
-
-      const storedKey =
-        movie.enrichmentTitleKey || '';
-
-      if (
-        movie.enrichmentCheckedAt &&
-        storedKey === titleKey
-      ) {
-        return false;
-      }
-
-      return !(
-        movie.poster &&
-        movie.director &&
-        movie.length &&
-        movie.rating
-      );
     }
 
     async function enrichSingleMovie(movie) {
-      const originalTitle =
-        String(movie.title || '').trim();
+      const apiKey = localStorage.getItem('tmdb_api_key');
+      if (!apiKey) return movie;
 
-      const releaseYear =
-        extractTitleYear(originalTitle) ||
-        String(movie.releaseDate || '').slice(0, 4);
+      const originalTitle = movie.originalTitle || movie.title || '';
+      const releaseYear = movie.publishDate || movie.releaseDate || extractTitleYear(originalTitle);
 
-      let details = null;
+      // Physical-media label is not the same thing as TMDB's production company.
+      // Preserve the catalog publisher/label and only infer a boutique label from
+      // the release text/UPC metadata when available.
+      movie.publisher = movie.publisher || movie.label || '';
+      movie.label = movie.label || detectBoutiqueLabel(movie.publisher, originalTitle, movie.upcBrand) || movie.publisher || '';
 
-      /*
-       * Title-based matching comes first.
-       * This is much more reliable for catalog strings
-       * such as:
-       *
-       * Donnie Darko (Widescreen Edition) [DVD]
-       */
+      let tmdbResult = await resolveTMDBMovie(originalTitle, releaseYear);
+      let upcItem = null;
 
-      const matched =
-        await resolveTMDBMovie(
-          originalTitle,
-          releaseYear
-        );
-
-      if (matched?.id) {
-        movie.tmdbId = matched.id;
-
-        details =
-          await fetchMovieDetailsFromTMDB(
-            matched.id
-          );
-      }
-
-      /*
-       * UPC/EAN is intentionally a fallback.
-       * This prevents the slow UPC API from dominating
-       * normal bulk enrichment.
-       */
-
-      if (!details) {
-        const barcode =
-          normalizeBarcode(
-            movie.upcCode ||
-            movie.upc ||
-            movie.ean
-          );
-
-        if (isPlausibleBarcode(barcode)) {
-          const product =
-            await lookupUPC(barcode);
-
-          if (product) {
-            movie.upcProductTitle =
-              product.title || '';
-
-            movie.upcBrand =
-              product.brand || '';
-
-            if (
-              !movie.poster &&
-              product.images?.length
-            ) {
-              movie.poster =
-                product.images[0];
+      // Only spend a UPCitemdb request when title resolution genuinely fails.
+      if (!tmdbResult && movie.upc && isPlausibleBarcode(movie.upc)) {
+        try {
+          upcItem = await lookupUPC(movie.upc);
+          if (upcItem) {
+            movie.upcProductTitle = upcItem.title || '';
+            movie.upcBrand = upcItem.brand || '';
+            if (!movie.label) movie.label = detectBoutiqueLabel(upcItem.brand, upcItem.title) || upcItem.brand || '';
+            if (upcItem.title) {
+              tmdbResult = await resolveTMDBMovie(upcItem.title, releaseYear);
             }
           }
+        } catch (err) {
+          console.warn(`UPC lookup failed for ${movie.upc}:`, err);
         }
       }
 
-      if (details) {
-        movie.title =
-          details.title ||
-          cleanTitle(originalTitle);
-
-        movie.releaseDate =
-          details.release_date ||
-          movie.releaseDate ||
-          '';
-
-        movie.poster =
-          details.poster_path
-            ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
-            : movie.poster || '';
-
-        movie.backdrop =
-          details.backdrop_path
-            ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}`
-            : movie.backdrop || '';
-
-        movie.overview =
-          details.overview ||
-          movie.overview ||
-          '';
-
-        movie.rating =
-          details.vote_average != null
-            ? Number(details.vote_average).toFixed(1)
-            : movie.rating || '';
-
-        movie.length =
-          details.runtime
-            ? `${details.runtime} min`
-            : movie.length || '';
-
-        movie.director =
-          extractDirector(details) ||
-          movie.director ||
-          '';
-
-        movie.studio =
-          extractStudio(details) ||
-          movie.studio ||
-          '';
-
-        movie.trailer =
-          extractTrailer(details) ||
-          movie.trailer ||
-          '';
-
-        if (
-          !movie.format ||
-          movie.format === 'Other'
-        ) {
-          movie.format =
-            detectFormat(
-              originalTitle,
-              movie.studio
-            );
+      let foundUsefulData = false;
+      if (tmdbResult) {
+        const details = await fetchMovieDetailsFromTMDB(tmdbResult.id);
+        if (details) {
+          const cleaned = cleanTitle(originalTitle);
+          movie.title = cleaned || movie.title || cleanTitle(details.title);
+          movie.canonicalTitle = details.title || movie.canonicalTitle || movie.title;
+          movie.tmdbId = details.tmdbId || tmdbResult.id;
+          if (!movie.poster && details.poster) { movie.poster = details.poster; foundUsefulData = true; }
+          movie.backdrop = details.backdrop || movie.backdrop || '';
+          if (!movie.director || /^(unknown director|n\/a|various)$/i.test(movie.director.trim())) {
+            if (details.director) { movie.director = details.director; foundUsefulData = true; }
+          }
+          if (!movie.studio || /^(n\/a|various)$/i.test(movie.studio.trim())) movie.studio = details.studio || movie.studio || '';
+          if (!movie.overview && details.overview) { movie.overview = details.overview; foundUsefulData = true; }
+          if (!movie.trailer) movie.trailer = details.trailer;
+          if (!movie.rating) movie.rating = details.rating;
+          if (!movie.length && details.length) movie.length = details.length;
+          if (!movie.releaseDate && details.releaseDate) movie.releaseDate = details.releaseDate;
+          foundUsefulData = true;
         }
+      } else if (upcItem) {
+        movie.upcProductTitle = upcItem.title || '';
+        movie.upcBrand = upcItem.brand || '';
+        if (!movie.poster && Array.isArray(upcItem.images) && upcItem.images.length) movie.poster = upcItem.images[0];
       }
 
-      movie.enrichmentTitleKey =
-        normalizeMatchTitle(originalTitle);
-
-      movie.enrichmentCheckedAt =
-        new Date().toISOString();
-
+      // Remember which normalized title was actually tested. If the normalization
+      // logic changes later, old records automatically become eligible for retry.
+      movie.enrichmentTitleKey = normalizeMatchTitle(originalTitle);
+      movie.enrichmentCheckedAt = new Date().toISOString();
+      movie.enrichmentMatched = !!tmdbResult || foundUsefulData;
       return movie;
     }
 
     async function runBulkEnrichment() {
-      const apiKey = getTMDBApiKey();
-
-      if (!apiKey) {
-        alert(
-          'Add your TMDB API key in Settings first.'
-        );
-        return;
-      }
-
-      const toEnrich =
-        collection.filter(needsEnrichment);
-
+      closeSettingsModal();
+      const toEnrich = collection.filter(m => needsEnrichment(m));
       if (!toEnrich.length) {
-        alert(
-          'Nothing currently needs enrichment.'
-        );
+        alert('All items are already fully enriched!');
         return;
       }
 
       const CONCURRENCY = 4;
+      let nextIndex = 0;
+      let processed = 0;
+      let errorCount = 0;
+      let updatedCount = 0;
 
-      let completed = 0;
-
-      showToast(
-        `Enriching 0 / ${toEnrich.length}...`,
-        0
-      );
-
-      let index = 0;
+      showToast(`Enriching 0 of ${toEnrich.length}…`);
 
       async function worker() {
         while (true) {
-          const currentIndex = index++;
-
-          if (currentIndex >= toEnrich.length) {
-            break;
-          }
-
-          const movie =
-            toEnrich[currentIndex];
-
+          const i = nextIndex++;
+          if (i >= toEnrich.length) return;
+          const movie = toEnrich[i];
           try {
             await enrichSingleMovie(movie);
+            updatedCount++;
           } catch (err) {
-            console.error(
-              'Enrichment failed:',
-              movie.title,
-              err
-            );
+            errorCount++;
+            console.warn('Enrichment failed:', movie.title, err);
           }
-
-          completed++;
-
-          showToast(
-            `Enriching ${completed} / ${toEnrich.length}...`,
-            0
-          );
-
-          if (
-            completed % CONCURRENCY === 0 ||
-            completed === toEnrich.length
-          ) {
+          processed++;
+          if (processed % 4 === 0 || processed === toEnrich.length) {
             saveCollection();
             renderCatalog();
+            showToast(`Enriching ${processed} of ${toEnrich.length} · ${Math.round(processed / toEnrich.length * 100)}%`);
           }
         }
       }
 
-      await Promise.all(
-        Array.from(
-          {
-            length:
-              Math.min(
-                CONCURRENCY,
-                toEnrich.length
-              )
-          },
-          () => worker()
-        )
-      );
-
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, toEnrich.length) }, worker));
       saveCollection();
       renderCatalog();
-      updateStats();
-
-      showToast(
-        `Enrichment complete — ${completed} items processed.`,
-        3000
-      );
+      hideToast();
+      alert(`Enrichment finished: ${updatedCount} processed, ${errorCount} failed. TMDB results are cached locally for future runs.`);
     }
 
-    /*
-     * ---------------------------------------------------------
-     * CATALOG RENDERING
-     * ---------------------------------------------------------
-     */
+    function openDetailModal(id) {
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
+      activeMovieForModal = m;
 
-    function renderCatalog() {
-      const grid =
-        document.getElementById('catalog-grid');
+      document.getElementById('detail-title').innerText = m.title;
+      document.getElementById('detail-director').innerText = m.director || 'Unknown Director';
+      document.getElementById('detail-format').innerText = m.format || 'Blu-ray';
+      document.getElementById('detail-studio-badge').innerText = m.label || m.publisher || m.studio || 'Standard Release';
+      const detailYear = getReleaseYear(m);
+      const eraBadge = document.getElementById('detail-era-badge');
+      eraBadge.classList.toggle('hidden', detailYear !== 0 && !(detailYear >= 1980 && detailYear <= 1989));
+      if (detailYear >= 1980 && detailYear <= 1989) eraBadge.innerText = `${detailYear} · 80s`;
+      const boutiqueBadge = document.getElementById('detail-boutique-badge');
+      boutiqueBadge.classList.toggle('hidden', !isBoutiqueLabel(m));
+      document.getElementById('detail-overview').innerText = m.overview || 'No synopsis available.';
+      document.getElementById('detail-rating').innerText = m.rating || 'N/A';
+      document.getElementById('detail-poster').src = m.poster || 'https://via.placeholder.com/300x450/1e293b/94a3b8?text=No+Poster';
+      document.getElementById('detail-backdrop').src = m.backdrop || m.poster || '';
 
-      if (!grid) return;
+      document.getElementById('detail-discs').innerText = m.numberOfDiscs || 1;
+      document.getElementById('detail-copies').innerText = m.copies || 1;
+      document.getElementById('detail-length').innerText = m.length || 'N/A';
 
-      const query =
-        (
-          document.getElementById(
-            'search-input'
-          )?.value || ''
-        )
-          .trim()
-          .toLowerCase();
+      const dateStr = m.datePurchased ? new Date(m.datePurchased).toLocaleDateString() : 'N/A';
+      document.getElementById('detail-date').innerText = dateStr;
 
-      let filtered =
-        collection.filter(movie => {
-          if (
-            currentFormatFilter !== 'All'
-          ) {
-            if (
-              currentFormatFilter === 'Other'
-            ) {
-              if (
-                ['4K UHD','Blu-ray','DVD']
-                  .includes(movie.format)
-              ) {
-                return false;
-              }
-            } else if (
-              movie.format !==
-              currentFormatFilter
-            ) {
-              return false;
-            }
+      if (m.datePurchased) {
+        const diffTime = Math.abs(new Date() - new Date(m.datePurchased));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        document.getElementById('detail-days').innerText = `${diffDays} Days`;
+      } else {
+        document.getElementById('detail-days').innerText = 'N/A';
+      }
+
+      const trailerBtn = document.getElementById('trailer-play-btn');
+      if (m.trailer) trailerBtn.classList.remove('hidden');
+      else trailerBtn.classList.add('hidden');
+
+      document.getElementById('detail-advisor-btn').onclick = () => { closeDetailModal(); openAdvisorForMovie(m.id); };
+      document.getElementById('detail-edit-btn').onclick = () => { closeDetailModal(); editMovie(m.id); };
+      document.getElementById('detail-delete-btn').onclick = () => { closeDetailModal(); deleteMovie(m.id); };
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+    function openTrailerModal() {
+      if (activeMovieForModal && activeMovieForModal.trailer) {
+        document.getElementById('trailer-iframe').src = `https://www.youtube.com/embed/${activeMovieForModal.trailer}?autoplay=1`;
+        document.getElementById('trailer-modal').classList.remove('hidden');
+      }
+    }
+
+    function closeTrailerModal() {
+      document.getElementById('trailer-iframe').src = '';
+      document.getElementById('trailer-modal').classList.add('hidden');
+    }
+
+    // Helper for robust CSV row parsing with quoted field awareness
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
           }
-
-          if (!query) return true;
-
-          const haystack = [
-            movie.title,
-            movie.director,
-            movie.studio,
-            movie.upc,
-            movie.upcCode,
-            movie.ean,
-            movie.overview
-          ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
-
-          return haystack.includes(query);
-        });
-
-      filtered.sort((a, b) =>
-        String(a.title || '').localeCompare(
-          String(b.title || '')
-        )
-      );
-
-      grid.innerHTML = '';
-
-      if (!filtered.length) {
-        grid.innerHTML = `
-          <div class="col-span-full glass-card rounded-2xl p-10 text-center">
-            <i class="fa-solid fa-film text-3xl text-slate-700"></i>
-            <p class="font-bold text-sm mt-3 text-slate-400">
-              No films found.
-            </p>
-            <p class="text-[11px] text-slate-600 mt-1">
-              Try a different search or format filter.
-            </p>
-          </div>
-        `;
-
-        updateStats();
-        return;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
       }
-
-      filtered.forEach(movie => {
-        const card =
-          document.createElement('div');
-
-        card.className =
-          'poster-card glass-card rounded-xl overflow-hidden cursor-pointer transition duration-300 hover:-translate-y-1';
-
-        card.onclick = () =>
-          editMovie(movie.id);
-
-        const poster =
-          movie.poster ||
-          '';
-
-        const formatClass =
-          movie.format === '4K UHD'
-            ? 'bg-amber-500 text-slate-950'
-            : movie.format === 'Blu-ray'
-              ? 'bg-blue-500/80 text-white'
-              : movie.format === 'DVD'
-                ? 'bg-slate-700 text-slate-200'
-                : 'bg-violet-500/80 text-white';
-
-        const missing =
-          needsEnrichment(movie);
-
-        card.innerHTML = `
-          <div class="relative aspect-[2/3] bg-slate-950 overflow-hidden">
-            ${
-              poster
-                ? `
-                  <img
-                    src="${escapeHtml(poster)}"
-                    alt="${escapeHtml(movie.title)}"
-                    loading="lazy"
-                    class="w-full h-full object-cover">
-                `
-                : `
-                  <div class="poster-fallback w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                    <i class="fa-solid fa-film text-2xl text-slate-700"></i>
-                    <span class="text-[10px] text-slate-600 mt-2">
-                      No poster
-                    </span>
-                  </div>
-                `
-            }
-
-            <div class="absolute top-2 left-2">
-              <span class="${formatClass} px-1.5 py-1 rounded-md text-[8px] font-black uppercase tracking-wider shadow-lg">
-                ${escapeHtml(movie.format || 'Other')}
-              </span>
-            </div>
-
-            ${
-              movie.packaging === 'Steelbook'
-                ? `
-                  <div class="absolute top-2 right-2">
-                    <span class="bg-violet-500 text-white px-1.5 py-1 rounded-md text-[8px] font-black uppercase shadow-lg">
-                      Steelbook
-                    </span>
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              missing
-                ? `
-                  <div class="absolute bottom-2 right-2">
-                    <span class="bg-red-500/90 text-white px-1.5 py-1 rounded-md text-[8px] font-black uppercase shadow-lg">
-                      Needs Data
-                    </span>
-                  </div>
-                `
-                : ''
-            }
-          </div>
-
-          <div class="p-2.5">
-            <h3 class="font-black text-xs text-white line-clamp-2 leading-tight">
-              ${escapeHtml(movie.title || 'Untitled')}
-            </h3>
-
-            <div class="flex items-center justify-between gap-2 mt-1.5">
-              <span class="text-[9px] text-slate-500 truncate">
-                ${escapeHtml(movie.director || movie.studio || 'Metadata incomplete')}
-              </span>
-
-              ${
-                movie.rating
-                  ? `
-                    <span class="shrink-0 text-[9px] text-amber-400 font-bold">
-                      ★ ${escapeHtml(movie.rating)}
-                    </span>
-                  `
-                  : ''
-              }
-            </div>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
-
-      updateStats();
+      result.push(current.trim());
+      return result;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * SURPRISE ME
-     * ---------------------------------------------------------
-     */
+    async function handleCSVImport() {
+      const fileInput = document.getElementById('csv-file-input');
+      if (!fileInput.files.length) return alert("Select a CSV file first.");
 
-    function surpriseMe() {
-      if (!collection.length) {
-        alert(
-          'Add or import some movies first.'
-        );
-        return;
-      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
 
-      const movie =
-        collection[
-          Math.floor(
-            Math.random() *
-            collection.length
-          )
-        ];
+      reader.onload = async (e) => {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/);
+        if (lines.length < 2) return;
 
-      editMovie(movie.id);
-    }
+        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+        
+        const idIdx = headers.findIndex(h => h === 'id');
+        const itemTypeIdx = headers.findIndex(h => h.includes('item_type') || h.includes('category') || h.includes('medium') || h.includes('format'));
+        const titleIdx = headers.findIndex(h => h.includes('title'));
+        const creatorsIdx = headers.findIndex(h => h.includes('creators') || h.includes('ensemble') || h.includes('director') || h.includes('author'));
+        const publisherIdx = headers.findIndex(h => h.includes('publisher') || h.includes('studio') || h.includes('label'));
+        const lengthIdx = headers.findIndex(h => h.includes('length') || h.includes('runtime'));
+        const discsIdx = headers.findIndex(h => h.includes('number_of_discs') || h.includes('discs'));
+        const copiesIdx = headers.findIndex(h => h.includes('copies'));
+        const eanIdx = headers.findIndex(h => h.includes('ean_isbn13') || h.includes('ean') || h.includes('barcode'));
+        const upcIdx = headers.findIndex(h => h.includes('upc_isbn10') || h.includes('upc'));
+        const dateIdx = headers.findIndex(h => h === 'added' || h.includes('date'));
+        const publishDateIdx = headers.findIndex(h => h === 'publish_date' || h.includes('publishdate'));
 
-    /*
-     * ---------------------------------------------------------
-     * TABS
-     * ---------------------------------------------------------
-     */
+        let imported = [];
 
-    function switchTab(tab) {
-      [
-        'catalog',
-        'scanner',
-        'upgrades'
-      ].forEach(name => {
-        document
-          .getElementById(`tab-${name}`)
-          .classList.toggle(
-            'hidden',
-            name !== tab
-          );
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const row = parseCSVLine(lines[i]);
 
-        const button =
-          document.getElementById(
-            `tab-btn-${name}`
-          );
+          const rawTitle = titleIdx !== -1 ? row[titleIdx] : '';
+          const cleanedTitle = cleanTitle(rawTitle);
+          if (!cleanedTitle) continue;
 
-        if (!button) return;
+          const itemType = itemTypeIdx !== -1 ? row[itemTypeIdx] : '';
+          const ean = eanIdx !== -1 ? normalizeBarcode(row[eanIdx]) : '';
+          const upc = upcIdx !== -1 ? normalizeBarcode(row[upcIdx]) : '';
+          const barcode = upc || ean;
 
-        button.classList.toggle(
-          'border-amber-500',
-          name === tab
-        );
+          let item = {
+            id: (idIdx !== -1 && row[idIdx]) ? row[idIdx] : ('m_' + Date.now() + '_' + i),
+            title: cleanedTitle,
+            originalTitle: rawTitle,
+            director: creatorsIdx !== -1 ? row[creatorsIdx] : '',
+            format: parseFormatString(itemType, rawTitle),
+            publisher: publisherIdx !== -1 ? row[publisherIdx] : '',
+            label: publisherIdx !== -1 ? (detectBoutiqueLabel(row[publisherIdx], rawTitle) || row[publisherIdx]) : '',
+            studio: '',
+            length: lengthIdx !== -1 ? row[lengthIdx] : '',
+            numberOfDiscs: discsIdx !== -1 ? (parseInt(row[discsIdx]) || 1) : 1,
+            copies: copiesIdx !== -1 ? (parseInt(row[copiesIdx]) || 1) : 1,
+            upc: barcode,
+            ean: ean,
+            upcCode: upc,
+            releaseDate: publishDateIdx !== -1 ? row[publishDateIdx] : '',
+            datePurchased: dateIdx !== -1 && row[dateIdx] ? row[dateIdx] : new Date().toISOString().split('T')[0],
+            poster: '',
+            overview: '',
+            backdrop: '',
+            trailer: '',
+            rating: ''
+          };
 
-        button.classList.toggle(
-          'text-amber-400',
-          name === tab
-        );
+          imported.push(item);
+        }
 
-        button.classList.toggle(
-          'border-transparent',
-          name !== tab
-        );
-
-        button.classList.toggle(
-          'text-slate-400',
-          name !== tab
-        );
-      });
-
-      if (tab === 'upgrades') {
-        renderUpgrades();
-      }
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * SCANNER
-     * ---------------------------------------------------------
-     */
-
-    async function startScanner() {
-      if (html5QrCode) return;
-
-      const reader =
-        document.getElementById('reader');
-
-      if (!reader) return;
-
-      html5QrCode =
-        new Html5Qrcode('reader');
-
-      try {
-        await html5QrCode.start(
-          {
-            facingMode: 'environment'
-          },
-          {
-            fps: 10,
-            qrbox: {
-              width: 280,
-              height: 160
-            }
-          },
-          async decodedText => {
-            await stopScanner();
-            await handleBarcode(decodedText);
-          },
-          () => {}
-        );
-      } catch (err) {
-        console.error(
-          'Scanner failed:',
-          err
-        );
-
-        html5QrCode = null;
-
-        alert(
-          'Could not start the camera scanner. Check browser camera permissions.'
-        );
-      }
-    }
-
-    async function stopScanner() {
-      if (!html5QrCode) return;
-
-      try {
-        await html5QrCode.stop();
-        await html5QrCode.clear();
-      } catch (err) {
-        console.warn(
-          'Scanner stop error:',
-          err
-        );
-      }
-
-      html5QrCode = null;
-    }
-
-    async function manualBarcodeLookup() {
-      const value =
-        document.getElementById(
-          'manual-barcode'
-        ).value;
-
-      await handleBarcode(value);
-    }
-
-    async function handleBarcode(rawBarcode) {
-      const barcode =
-        normalizeBarcode(rawBarcode);
-
-      const result =
-        document.getElementById(
-          'scanner-result'
-        );
-
-      if (!isPlausibleBarcode(barcode)) {
-        result.innerHTML = `
-          <div class="rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-xs text-red-300">
-            That doesn't look like a valid UPC/EAN.
-          </div>
-        `;
-        return;
-      }
-
-      result.innerHTML = `
-        <div class="rounded-xl border border-amber-900/50 bg-amber-950/20 p-3 text-xs text-amber-300">
-          Looking up ${escapeHtml(barcode)}...
-        </div>
-      `;
-
-      const product =
-        await lookupUPC(barcode);
-
-      if (!product) {
-        result.innerHTML = `
-          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-400">
-            No product found for ${escapeHtml(barcode)}.
-          </div>
-        `;
-        return;
-      }
-
-      const title =
-        cleanTitle(
-          product.title || ''
-        );
-
-      result.innerHTML = `
-        <div class="glass-card rounded-xl p-3">
-          <div class="flex gap-3">
-            ${
-              product.images?.[0]
-                ? `
-                  <img
-                    src="${escapeHtml(product.images[0])}"
-                    class="w-16 h-24 object-cover rounded-lg">
-                `
-                : ''
-            }
-
-            <div class="min-w-0">
-              <h3 class="font-black text-sm">
-                ${escapeHtml(title || product.title || 'Unknown')}
-              </h3>
-
-              <p class="text-[10px] text-slate-500 mt-1">
-                ${escapeHtml(product.brand || '')}
-              </p>
-
-              <p class="text-[10px] text-slate-600 mt-1">
-                ${escapeHtml(barcode)}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onclick="addFromBarcode(${JSON.stringify(product).replace(/</g, '\\u003c')}, '${escapeHtml(barcode)}')"
-            class="mt-3 w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2 rounded-lg text-xs">
-            Add to Collection
-          </button>
-        </div>
-      `;
-    }
-
-    function addFromBarcode(product, barcode) {
-      const title =
-        cleanTitle(
-          product.title || ''
-        );
-
-      if (!title) {
-        alert(
-          'The barcode result did not contain a usable title.'
-        );
-        return;
-      }
-
-      const movie = {
-        id: 'm_' + Date.now(),
-        title,
-        format: detectFormat(
-          product.title || '',
-          product.brand || ''
-        ),
-        packaging: 'Standard Case',
-        director: '',
-        studio: product.brand || '',
-        length: '',
-        numberOfDiscs: 1,
-        copies: 1,
-        datePurchased: '',
-        upc: barcode,
-        upcCode: barcode,
-        ean: barcode,
-        poster:
-          product.images?.[0] || '',
-        overview: '',
-        backdrop: '',
-        trailer: '',
-        rating: '',
-        releaseDate: '',
-        tmdbId: ''
+        collection = [...imported, ...collection];
+        saveCollection();
+        renderCatalog();
+        closeSettingsModal();
+        alert(`Successfully imported ${imported.length} items from CSV! Run Auto-Enrich to pull poster art & metadata.`);
       };
 
-      collection.unshift(movie);
-      saveCollection();
-      renderCatalog();
-
-      alert(
-        `"${title}" added to your collection.`
-      );
+      reader.readAsText(file);
     }
 
-    /*
-     * ---------------------------------------------------------
-     * TITLE SEARCH
-     * ---------------------------------------------------------
-     */
-
-    async function searchTMDBTitle() {
-      const query =
-        document.getElementById(
-          'form-title'
-        ).value.trim();
-
-      const resultsDiv =
-        document.getElementById(
-          'tmdb-results'
-        );
-
-      if (!query) return;
-
-      if (!getTMDBApiKey()) {
-        alert(
-          'Add your TMDB API key in Settings first.'
-        );
+    async function handleScannedBarcode(upc) {
+      const code = normalizeBarcode(upc);
+      if (!isPlausibleBarcode(code)) {
+        alert("That doesn't look like a valid UPC/EAN barcode.");
         return;
       }
 
-      resultsDiv.classList.remove(
-        'hidden'
-      );
-
-      resultsDiv.innerHTML = `
-        <div class="p-3 text-xs text-slate-400">
-          Searching TMDB...
-        </div>
-      `;
+      openAddModal();
+      document.getElementById('form-upc').value = code;
+      document.getElementById('form-title').value = "Looking up barcode...";
+      const apiKey = localStorage.getItem('tmdb_api_key');
 
       try {
-        const releaseYear =
-          extractTitleYear(query);
+        const item = await lookupUPC(code);
 
-        const candidates =
-          titleCandidates(query);
-
-        let results = [];
-
-        for (const candidate of candidates) {
-          results =
-            await searchTMDBMovie(
-              candidate.title,
-              releaseYear
-            );
-
-          if (results.length) {
-            break;
-          }
-        }
-
-        if (!results.length) {
-          resultsDiv.innerHTML = `
-            <div class="p-3 text-xs text-slate-500">
-              No TMDB matches found.
-            </div>
-          `;
+        if (!item) {
+          document.getElementById('form-title').value = '';
+          alert(`No product was found for barcode ${code}. You can enter the title manually.`);
           return;
         }
 
-        resultsDiv.innerHTML = '';
+        const rawTitle = item.title || '';
+        const cleanedTitle = cleanTitle(rawTitle);
+        if (cleanedTitle) document.getElementById('form-title').value = cleanedTitle;
 
-        results
-          .slice(0, 8)
-          .forEach(movie => {
-            const row =
-              document.createElement('div');
-
-            row.className =
-              'p-2.5 hover:bg-slate-800 cursor-pointer flex items-center justify-between text-slate-200 transition border-b border-slate-900 last:border-0';
-
-            row.innerHTML = `
-              <div class="min-w-0">
-                <div class="text-xs font-bold truncate">
-                  ${escapeHtml(movie.title || '')}
-                </div>
-
-                <div class="text-[9px] text-slate-500 mt-0.5">
-                  ${escapeHtml(
-                    (movie.release_date || '').slice(0,4)
-                  )}
-                </div>
-              </div>
-
-              <i class="fa-solid fa-chevron-right text-[9px] text-slate-600 ml-3"></i>
-            `;
-
-            row.onclick = async () => {
-              resultsDiv.classList.add(
-                'hidden'
-              );
-
-              try {
-                const details =
-                  await fetchMovieDetailsFromTMDB(
-                    movie.id
-                  );
-
-                if (details) {
-                  fillFormWithDetails(
-                    details
-                  );
-                }
-              } catch (err) {
-                alert(
-                  `TMDB lookup failed: ${err.message}`
-                );
+        if (apiKey && cleanedTitle) {
+          try {
+            const tmdbResult = await searchTMDBMovie(cleanedTitle);
+            if (tmdbResult) {
+              const details = await fetchMovieDetailsFromTMDB(tmdbResult.id);
+              if (details) {
+                fillFormWithDetails(details);
+                document.getElementById('form-upc').value = code;
+                return;
               }
-            };
+            }
+          } catch (err) {
+            console.warn('TMDB lookup after UPC failed:', err);
+          }
+        }
 
-            resultsDiv.appendChild(row);
-          });
-
+        document.getElementById('form-title').value = cleanedTitle || rawTitle;
+        if (item.brand) { document.getElementById('form-publisher').value = item.brand; document.getElementById('form-studio').value = ''; }
       } catch (err) {
-        console.error(
-          'TMDB title search failed:',
-          err
-        );
-
-        resultsDiv.innerHTML = `
-          <div class="p-3 text-xs text-red-300">
-            TMDB lookup failed:
-            ${escapeHtml(err.message)}
-          </div>
-        `;
+        console.error('Barcode lookup failed:', err);
+        document.getElementById('form-title').value = '';
+        alert(`Barcode lookup failed: ${err.message}`);
       }
     }
 
-    /*
-     * ---------------------------------------------------------
-     * UPGRADES
-     * ---------------------------------------------------------
-     */
+    function fillFormWithDetails(d) {
+      document.getElementById('form-title').value = cleanTitle(d.title);
+      document.getElementById('form-director').value = d.director;
+      document.getElementById('form-studio').value = d.studio;
+      document.getElementById('form-poster').value = d.poster;
+      document.getElementById('form-overview').value = d.overview;
+      document.getElementById('form-backdrop').value = d.backdrop;
+      document.getElementById('form-trailer').value = d.trailer;
+      document.getElementById('form-rating').value = d.rating;
+      if (d.length) document.getElementById('form-length').value = d.length;
+    }
 
-    function renderUpgrades() {
-      const container =
-        document.getElementById(
-          'upgrades-list'
-        );
+    function startCameraScanner() {
+      document.getElementById('start-scan-btn').classList.add('hidden');
+      document.getElementById('stop-scan-btn').classList.remove('hidden');
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (text) => {
+        handleScannedBarcode(text);
+        stopCameraScanner();
+      }, () => {});
+    }
 
-      container.innerHTML = '';
+    function stopCameraScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner = null;
+          document.getElementById('start-scan-btn').classList.remove('hidden');
+          document.getElementById('stop-scan-btn').classList.add('hidden');
+        }).catch(() => {});
+      }
+    }
 
-      const upgrades =
-        collection.filter(
-          m => m.format !== '4K UHD'
-        );
+    function handleManualUpcSubmit() {
+      const upc = document.getElementById('manual-upc-input').value.trim();
+      if (upc) {
+        handleScannedBarcode(upc);
+        document.getElementById('manual-upc-input').value = '';
+      }
+    }
 
-      if (!upgrades.length) {
-        container.innerHTML = `
-          <p class="text-xs text-slate-400 p-6 text-center">
-            No upgrade candidates found in your library.
-          </p>
-        `;
+    async function searchTMDBForTitle() {
+      const rawQuery = document.getElementById('form-title').value;
+      const query = cleanTitle(rawQuery);
+      const resultsDiv = document.getElementById('tmdb-results');
+
+      if (!query) return;
+      if (!localStorage.getItem('tmdb_api_key')) {
+        alert("Add your TMDB API key in Settings first.");
         return;
       }
 
-      upgrades.forEach(movie => {
-        const item =
-          document.createElement('div');
+      try {
+        const apiKey = localStorage.getItem('tmdb_api_key');
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${encodeURIComponent(apiKey)}&query=${encodeURIComponent(query)}&include_adult=false`;
+        const data = await fetchJson(url);
 
-        item.className =
-          'glass-card rounded-xl p-3 flex items-center justify-between';
+        resultsDiv.innerHTML = '';
+        if (data.results && data.results.length > 0) {
+          resultsDiv.classList.remove('hidden');
+          data.results.slice(0, 6).forEach(movie => {
+            const row = document.createElement('div');
+            row.className = "p-2 hover:bg-slate-800 cursor-pointer flex justify-between rounded text-slate-200 transition";
+            row.innerHTML = `<span>${movie.title} (${(movie.release_date || '').slice(0,4)})</span>`;
+            row.onclick = async () => {
+              resultsDiv.classList.add('hidden');
+              const details = await fetchMovieDetailsFromTMDB(movie.id);
+              if (details) fillFormWithDetails(details);
+            };
+            resultsDiv.appendChild(row);
+          });
+        } else {
+          resultsDiv.classList.remove('hidden');
+          resultsDiv.innerHTML = '<div class="p-2 text-slate-500">No TMDB matches found.</div>';
+        }
+      } catch (err) {
+        console.error('TMDB title search failed:', err);
+        resultsDiv.classList.remove('hidden');
+        resultsDiv.innerHTML = `<div class="p-2 text-red-300">TMDB lookup failed: ${err.message}</div>`;
+      }
+    }
 
+    function renderUpgrades() {
+      const container = document.getElementById('upgrades-list');
+      container.innerHTML = '';
+      const upgrades = collection.filter(m => m.format !== '4K UHD');
+
+      if (upgrades.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 p-6 text-center">No upgrade candidates found in your library.</p>';
+        return;
+      }
+
+      upgrades.forEach(m => {
+        const item = document.createElement('div');
+        item.className = "glass-card rounded-xl p-3 flex items-center justify-between";
         item.innerHTML = `
-          <div class="flex items-center space-x-3 min-w-0">
-            ${
-              movie.poster
-                ? `
-                  <img
-                    src="${escapeHtml(movie.poster)}"
-                    class="w-10 h-14 object-cover rounded shadow">
-                `
-                : `
-                  <div class="w-10 h-14 rounded bg-slate-900 flex items-center justify-center">
-                    <i class="fa-solid fa-film text-slate-700"></i>
-                  </div>
-                `
-            }
-
-            <div class="min-w-0">
-              <h4 class="font-bold text-xs text-white truncate">
-                ${escapeHtml(movie.title)}
-              </h4>
-
-              <p class="text-[10px] text-slate-400 mt-0.5">
-                Current Format:
-                ${escapeHtml(movie.format || 'Other')}
-              </p>
+          <div class="flex items-center space-x-3">
+            <img src="${m.poster || 'https://via.placeholder.com/100'}" class="w-10 h-14 object-cover rounded shadow">
+            <div>
+              <h4 class="font-bold text-xs text-white">${m.title}</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5">Current Format: ${m.format}</p>
             </div>
           </div>
-
-          <button
-            onclick="upgradeTo4K('${movie.id}')"
-            class="shrink-0 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow-md">
-            Mark 4K
-          </button>
+          <button onclick="upgradeTo4K('${m.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow-md">Mark 4K</button>
         `;
-
         container.appendChild(item);
       });
     }
 
     function upgradeTo4K(id) {
-      const index =
-        collection.findIndex(
-          movie => movie.id === id
-        );
-
-      if (index === -1) return;
-
-      collection[index].format =
-        '4K UHD';
-
-      saveCollection();
-      renderUpgrades();
-      renderCatalog();
+      const idx = collection.findIndex(m => m.id === id);
+      if (idx !== -1) {
+        collection[idx].format = '4K UHD';
+        saveCollection();
+        renderUpgrades();
+        renderCatalog();
+      }
     }
-
-    /*
-     * ---------------------------------------------------------
-     * ADD / EDIT MOVIE
-     * ---------------------------------------------------------
-     */
 
     function openAddModal() {
-      document.getElementById(
-        'modal-title'
-      ).innerText =
-        'Add Physical Edition';
-
-      document.getElementById(
-        'form-id'
-      ).value = '';
-
-      document.getElementById(
-        'form-title'
-      ).value = '';
-
-      document.getElementById(
-        'form-format'
-      ).value = 'Blu-ray';
-
-      document.getElementById(
-        'form-packaging'
-      ).value = 'Standard Case';
-
-      document.getElementById(
-        'form-director'
-      ).value = '';
-
-      document.getElementById(
-        'form-studio'
-      ).value = '';
-
-      document.getElementById(
-        'form-poster'
-      ).value = '';
-
-      document.getElementById(
-        'form-upc'
-      ).value = '';
-
-      document.getElementById(
-        'form-overview'
-      ).value = '';
-
-      document.getElementById(
-        'form-backdrop'
-      ).value = '';
-
-      document.getElementById(
-        'form-trailer'
-      ).value = '';
-
-      document.getElementById(
-        'form-rating'
-      ).value = '';
-
-      document.getElementById(
-        'tmdb-results'
-      ).classList.add('hidden');
-
-      document.getElementById(
-        'form-length'
-      ).value = '';
-
-      document.getElementById(
-        'form-discs'
-      ).value = '1';
-
-      document.getElementById(
-        'form-copies'
-      ).value = '1';
-
-      document.getElementById(
-        'form-date'
-      ).value =
-        new Date()
-          .toISOString()
-          .split('T')[0];
-
-      document.getElementById(
-        'movie-modal'
-      ).classList.remove('hidden');
+      document.getElementById('modal-title').innerText = "Add Physical Edition";
+      document.getElementById('form-id').value = '';
+      document.getElementById('form-title').value = '';
+      document.getElementById('form-director').value = '';
+      document.getElementById('form-publisher').value = '';
+      document.getElementById('form-studio').value = '';
+      document.getElementById('form-poster').value = '';
+      document.getElementById('form-upc').value = '';
+      document.getElementById('form-overview').value = '';
+      document.getElementById('form-backdrop').value = '';
+      document.getElementById('form-trailer').value = '';
+      document.getElementById('form-rating').value = '';
+      document.getElementById('tmdb-results').classList.add('hidden');
+      document.getElementById('form-length').value = '';
+      document.getElementById('form-discs').value = '1';
+      document.getElementById('form-copies').value = '1';
+      document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('movie-modal').classList.remove('hidden');
     }
 
-    function closeModal() {
-      document
-        .getElementById('movie-modal')
-        .classList.add('hidden');
-    }
+    function closeModal() { document.getElementById('movie-modal').classList.add('hidden'); }
 
     function editMovie(id) {
-      const movie =
-        collection.find(
-          item => item.id === id
-        );
+      const m = collection.find(item => item.id === id);
+      if (!m) return;
 
-      if (!movie) return;
+      document.getElementById('modal-title').innerText = "Edit Physical Edition";
+      document.getElementById('form-id').value = m.id;
+      document.getElementById('form-title').value = m.title;
+      document.getElementById('form-format').value = m.format || 'Blu-ray';
+      document.getElementById('form-packaging').value = m.packaging || 'Standard Case';
+      document.getElementById('form-director').value = m.director || '';
+      document.getElementById('form-publisher').value = m.publisher || m.label || '';
+      document.getElementById('form-studio').value = m.studio || '';
+      document.getElementById('form-length').value = m.length || '';
+      document.getElementById('form-discs').value = m.numberOfDiscs || 1;
+      document.getElementById('form-copies').value = m.copies || 1;
+      document.getElementById('form-date').value = m.datePurchased || '';
+      document.getElementById('form-upc').value = m.upc || '';
+      document.getElementById('form-poster').value = m.poster || '';
+      document.getElementById('form-overview').value = m.overview || '';
+      document.getElementById('form-backdrop').value = m.backdrop || '';
+      document.getElementById('form-trailer').value = m.trailer || '';
+      document.getElementById('form-rating').value = m.rating || '';
 
-      document.getElementById(
-        'modal-title'
-      ).innerText =
-        'Edit Physical Edition';
-
-      document.getElementById(
-        'form-id'
-      ).value =
-        movie.id;
-
-      document.getElementById(
-        'form-title'
-      ).value =
-        movie.title;
-
-      document.getElementById(
-        'form-format'
-      ).value =
-        movie.format || 'Blu-ray';
-
-      document.getElementById(
-        'form-packaging'
-      ).value =
-        movie.packaging || 'Standard Case';
-
-      document.getElementById(
-        'form-director'
-      ).value =
-        movie.director || '';
-
-      document.getElementById(
-        'form-studio'
-      ).value =
-        movie.studio || '';
-
-      document.getElementById(
-        'form-length'
-      ).value =
-        movie.length || '';
-
-      document.getElementById(
-        'form-discs'
-      ).value =
-        movie.numberOfDiscs || 1;
-
-      document.getElementById(
-        'form-copies'
-      ).value =
-        movie.copies || 1;
-
-      document.getElementById(
-        'form-date'
-      ).value =
-        movie.datePurchased || '';
-
-      document.getElementById(
-        'form-upc'
-      ).value =
-        movie.upc || '';
-
-      document.getElementById(
-        'form-poster'
-      ).value =
-        movie.poster || '';
-
-      document.getElementById(
-        'form-overview'
-      ).value =
-        movie.overview || '';
-
-      document.getElementById(
-        'form-backdrop'
-      ).value =
-        movie.backdrop || '';
-
-      document.getElementById(
-        'form-trailer'
-      ).value =
-        movie.trailer || '';
-
-      document.getElementById(
-        'form-rating'
-      ).value =
-        movie.rating || '';
-
-      document.getElementById(
-        'tmdb-results'
-      ).classList.add('hidden');
-
-      document.getElementById(
-        'movie-modal'
-      ).classList.remove('hidden');
+      document.getElementById('movie-modal').classList.remove('hidden');
     }
 
     function saveMovieForm() {
-      const id =
-        document.getElementById(
-          'form-id'
-        ).value;
-
-      const rawTitle =
-        document.getElementById(
-          'form-title'
-        ).value;
-
-      const title =
-        cleanTitle(rawTitle);
-
-      if (!title) {
-        alert('Title required.');
-        return;
-      }
-
-      const existing =
-        id
-          ? collection.find(
-              movie => movie.id === id
-            )
-          : null;
+      const id = document.getElementById('form-id').value;
+      const rawTitle = document.getElementById('form-title').value;
+      const title = cleanTitle(rawTitle);
+      if (!title) return alert("Title required.");
 
       const item = {
-        id:
-          id ||
-          ('m_' + Date.now()),
-
-        title,
-
-        format:
-          document.getElementById(
-            'form-format'
-          ).value,
-
-        packaging:
-          document.getElementById(
-            'form-packaging'
-          ).value,
-
-        director:
-          document.getElementById(
-            'form-director'
-          ).value.trim(),
-
-        studio:
-          document.getElementById(
-            'form-studio'
-          ).value.trim(),
-
-        length:
-          document.getElementById(
-            'form-length'
-          ).value.trim(),
-
-        numberOfDiscs:
-          parseInt(
-            document.getElementById(
-              'form-discs'
-            ).value
-          ) || 1,
-
-        copies:
-          parseInt(
-            document.getElementById(
-              'form-copies'
-            ).value
-          ) || 1,
-
-        datePurchased:
-          document.getElementById(
-            'form-date'
-          ).value,
-
-        upc:
-          normalizeBarcode(
-            document.getElementById(
-              'form-upc'
-            ).value
-          ),
-
-        poster:
-          document.getElementById(
-            'form-poster'
-          ).value.trim(),
-
-        overview:
-          document.getElementById(
-            'form-overview'
-          ).value,
-
-        backdrop:
-          document.getElementById(
-            'form-backdrop'
-          ).value,
-
-        trailer:
-          document.getElementById(
-            'form-trailer'
-          ).value,
-
-        rating:
-          document.getElementById(
-            'form-rating'
-          ).value,
-
-        releaseDate:
-          existing?.releaseDate || '',
-
-        ean:
-          existing?.ean || '',
-
-        upcCode:
-          existing?.upcCode || '',
-
-        tmdbId:
-          existing?.tmdbId || '',
-
-        enrichmentCheckedAt:
-          existing?.enrichmentCheckedAt || '',
-
-        enrichmentTitleKey:
-          existing?.enrichmentTitleKey || ''
+        id: id || ('m_' + Date.now()),
+        title: title,
+        format: document.getElementById('form-format').value,
+        packaging: document.getElementById('form-packaging').value,
+        director: document.getElementById('form-director').value.trim(),
+        studio: document.getElementById('form-studio').value.trim(),
+        publisher: document.getElementById('form-publisher').value.trim(),
+        label: detectBoutiqueLabel(document.getElementById('form-publisher').value, rawTitle) || document.getElementById('form-publisher').value.trim(),
+        length: document.getElementById('form-length').value.trim(),
+        numberOfDiscs: parseInt(document.getElementById('form-discs').value) || 1,
+        copies: parseInt(document.getElementById('form-copies').value) || 1,
+        datePurchased: document.getElementById('form-date').value,
+        upc: normalizeBarcode(document.getElementById('form-upc').value),
+        poster: document.getElementById('form-poster').value.trim(),
+        overview: document.getElementById('form-overview').value,
+        backdrop: document.getElementById('form-backdrop').value,
+        trailer: document.getElementById('form-trailer').value,
+        rating: document.getElementById('form-rating').value,
+        releaseDate: (id && collection.find(m => m.id === id)?.releaseDate) || '',
+        ean: (id && collection.find(m => m.id === id)?.ean) || '',
+        upcCode: (id && collection.find(m => m.id === id)?.upcCode) || '',
+        tmdbId: (id && collection.find(m => m.id === id)?.tmdbId) || ''
       };
 
       if (id) {
-        const index =
-          collection.findIndex(
-            movie => movie.id === id
-          );
-
-        if (index !== -1) {
-          collection[index] = item;
-        }
-      } else {
-        collection.unshift(item);
-      }
+        const idx = collection.findIndex(m => m.id === id);
+        if (idx !== -1) collection[idx] = item;
+      } else collection.unshift(item);
 
       saveCollection();
       renderCatalog();
@@ -2846,727 +1620,251 @@
     }
 
     function deleteMovie(id) {
-      if (
-        !confirm(
-          'Delete this physical edition?'
-        )
-      ) {
-        return;
+      if (confirm("Delete this physical edition?")) {
+        collection = collection.filter(m => m.id !== id);
+        saveCollection();
+        renderCatalog();
       }
-
-      collection =
-        collection.filter(
-          movie => movie.id !== id
-        );
-
-      saveCollection();
-      renderCatalog();
     }
-
-    /*
-     * ---------------------------------------------------------
-     * STATS
-     * ---------------------------------------------------------
-     */
 
     function updateStats() {
-      const totalItems =
-        collection.length;
+      const totalItems = collection.length;
+      const totalDiscs = collection.reduce((acc, item) => acc + (parseInt(item.numberOfDiscs) || 1), 0);
+      const totalCopies = collection.reduce((acc, item) => acc + (parseInt(item.copies) || 1), 0);
+      const fourK = collection.filter(m => m.format === '4K UHD').length;
+      const boutique = collection.filter(isBoutiqueLabel).length;
+      const missing = collection.filter(needsEnrichment).length;
 
-      const totalDiscs =
-        collection.reduce(
-          (acc, item) =>
-            acc +
-            (parseInt(
-              item.numberOfDiscs
-            ) || 1),
-          0
-        );
+      document.getElementById('stats-summary').innerText = `${totalItems} Items · ${totalDiscs} Discs · ${totalCopies} Copies`;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+      set('dash-total', totalItems); set('dash-4k', fourK); set('dash-boutique', boutique); set('dash-missing', missing);
+    }
 
-      const totalCopies =
-        collection.reduce(
-          (acc, item) =>
-            acc +
-            (parseInt(
-              item.copies
-            ) || 1),
-          0
-        );
+    // ---------------- COLLECTOR ADVISOR ----------------
+    let advisorHistory = [];
 
-      const fourK =
-        collection.filter(
-          movie =>
-            movie.format === '4K UHD'
-        ).length;
+    function loadAdvisorHistory() {
+      try { advisorHistory = JSON.parse(localStorage.getItem('filmvault_advisor_history') || '[]'); }
+      catch (_) { advisorHistory = []; }
+      renderAdvisorHistory();
+    }
 
-      const boutique =
-        collection.filter(
-          isBoutiqueLabel
-        ).length;
+    function saveAdvisorHistory() {
+      advisorHistory = advisorHistory.slice(-20);
+      localStorage.setItem('filmvault_advisor_history', JSON.stringify(advisorHistory));
+    }
 
-      const missing =
-        collection.filter(
-          needsEnrichment
-        ).length;
+    function renderAdvisorHistory() {
+      const box = document.getElementById('advisor-chat');
+      if (!box) return;
+      if (!advisorHistory.length) return;
+      box.innerHTML = '';
+      advisorHistory.forEach(msg => appendAdvisorBubble(msg.role, msg.content, false));
+      box.scrollTop = box.scrollHeight;
+    }
 
-      document.getElementById(
-        'stats-summary'
-      ).innerText =
-        `${totalItems} Items · ${totalDiscs} Discs · ${totalCopies} Copies`;
+    function appendAdvisorBubble(role, content, persist = true) {
+      const box = document.getElementById('advisor-chat');
+      if (!box) return;
+      const wrap = document.createElement('div');
+      wrap.className = role === 'user' ? 'flex justify-end' : '';
+      const bubble = document.createElement('div');
+      bubble.className = `${role === 'user' ? 'advisor-bubble-user max-w-[92%]' : 'advisor-bubble-ai max-w-[96%]'} rounded-2xl p-3.5`;
+      if (role === 'assistant') {
+        bubble.innerHTML = `<div class="flex items-center gap-2 text-violet-300 text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-robot"></i> FilmVault Advisor</div><div class="advisor-response text-xs text-slate-300 leading-relaxed mt-2">${formatAdvisorText(content)}</div>`;
+      } else {
+        bubble.innerHTML = `<div class="text-[9px] text-amber-300 font-black uppercase tracking-wider mb-1">You</div><div class="text-xs text-slate-200 leading-relaxed">${escapeHtml(content).replace(/\n/g,'<br>')}</div>`;
+      }
+      wrap.appendChild(bubble);
+      box.appendChild(wrap);
+      if (persist) {
+        advisorHistory.push({ role, content });
+        saveAdvisorHistory();
+      }
+      box.scrollTop = box.scrollHeight;
+    }
 
-      const set =
-        (id, value) => {
-          const element =
-            document.getElementById(id);
+    function formatAdvisorText(text) {
+      let safe = escapeHtml(text || '');
+      safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      safe = safe.replace(/`([^`]+)`/g, '<code class="bg-slate-950 px-1 rounded text-amber-300">$1</code>');
+      safe = safe.replace(/\n/g, '<br>');
+      safe = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-cyan-300 underline break-all">$1</a>');
+      return safe;
+    }
 
-          if (element) {
-            element.innerText =
-              value;
-          }
+    function clearAdvisorChat() {
+      advisorHistory = [];
+      localStorage.removeItem('filmvault_advisor_history');
+      const box = document.getElementById('advisor-chat');
+      if (box) box.innerHTML = `<div class="advisor-bubble-ai rounded-2xl p-4"><div class="flex items-center gap-2 text-violet-300 text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-robot"></i> FilmVault Advisor</div><p class="text-xs text-slate-300 leading-relaxed mt-2">Give me the release you found and, ideally, the asking price. I’ll judge it on <strong>collection fit, release quality, transfer, extras, scarcity, price, and whether a better edition/format exists</strong>.</p></div>`;
+    }
+
+    function advisorQuickPrompt(text) {
+      const input = document.getElementById('advisor-input');
+      input.value = text + '\n\nRelease: '; input.focus();
+    }
+
+    function handleAdvisorKeydown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendAdvisorMessage();
+      }
+    }
+
+    function getAdvisorCollectionContext(userText) {
+      const queryWords = normalizeMatchTitle(userText).split(' ').filter(w => w.length > 2);
+      const scored = collection.map(m => {
+        const hay = normalizeMatchTitle(`${m.title} ${m.publisher || ''} ${m.label || ''}`);
+        const score = queryWords.reduce((n,w) => n + (hay.includes(w) ? 1 : 0), 0);
+        return { m, score };
+      }).filter(x => x.score > 0).sort((a,b) => b.score-a.score).slice(0, 20).map(x => x.m);
+      const relevant = scored.length ? scored : collection.slice(0, 20);
+      const allTitles = collection.map(m => `${m.title} [${m.format || 'Unknown'}${m.label || m.publisher ? `; ${m.label || m.publisher}` : ''}]`).join(' | ');
+      return { relevant, allTitles };
+    }
+
+    function buildAdvisorPrompt(userText) {
+      const ctx = getAdvisorCollectionContext(userText);
+      const relevant = ctx.relevant.map(m => ({title:m.title, format:m.format, label:m.label || m.publisher || '', year:getReleaseYear(m), director:m.director || ''}));
+      return `You are FilmVault Collector Advisor, a very opinionated but evidence-driven physical-media collecting expert. You are advising this specific collector, not a generic movie buyer.
+
+COLLECTOR PHILOSOPHY:
+- The collector's rule is "cheapest copy worth it." Do not recommend an expensive upgrade merely because it is newer, rarer, boutique, steelbook, or 4K.
+- DVD is acceptable when the movie does not meaningfully benefit from a better transfer. Blu-ray/4K upgrades should be justified by picture, sound, extras, restoration, HDR, encode, or meaningful edition-specific value.
+- The collector likes 1970s-1990s cult classics, sci-fi, action, thrillers, horror, gritty atmosphere, practical effects, synth/new-wave aesthetics, and accessible metal/new-wave-adjacent culture. They particularly value films like Blade Runner, The Matrix, The Warriors, RoboCop, Manhunter, Thief, and To Live and Die in L.A., but do not force every recommendation toward those titles.
+- Boutique labels, special editions, steelbooks and scarcity matter only when they add real collector value. Avoid completionist/purist logic.
+- The collection is about owning movies the collector will actually watch, rewatch, or value physically—not owning every technically superior release.
+
+YOUR JOB:
+1. Identify the exact movie/release the user is asking about. If ambiguous, say so and ask for the missing detail rather than hallucinating.
+2. Evaluate collection fit: KEEP / WANT / CHEAP-COPY-ONLY / PASS, with reasoning.
+3. Evaluate the asking price if provided. Give BUY NOW / GOOD DEAL / FAIR / WAIT / PASS. Use current market evidence when research mode is available; never invent a market price.
+4. Evaluate the actual release/transfer for its format: picture quality, restoration/master, HDR/DV when relevant, audio, encode, extras, packaging, censorship/cuts, and known defects. Distinguish the movie's quality from the disc's quality.
+5. Compare against better alternatives: another Blu-ray, 4K, DVD, boutique edition, or standard release. The answer should explicitly say when the cheaper release is the smarter buy.
+6. Consider whether the user already owns it or a competing release in FilmVault. Do not recommend buying a duplicate unless the upgrade is genuinely worthwhile.
+7. If web research is enabled, prioritize authoritative/current sources such as publisher/distributor pages, Blu-ray.com, DVDBeaver, Caps-a-holic, 4K UHD reviews, Home Theater Forum, and reputable retailer/market listings. Cross-check claims when possible. Separate reviewer opinion from hard facts.
+8. Never fabricate transfer details, prices, release dates, UPCs, extras, or scarcity. If evidence is weak, say "uncertain".
+9. End with a blunt collector verdict in one line.
+
+RELEVANT EXISTING ITEMS:
+${JSON.stringify(relevant)}
+
+FULL COLLECTION TITLE INDEX (use this to detect duplicates and collection fit):
+${ctx.allTitles}
+
+USER QUESTION:
+${userText}`;
+    }
+
+    async function sendAdvisorMessage() {
+      const input = document.getElementById('advisor-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const apiKey = localStorage.getItem('filmvault_openai_api_key') || '';
+      if (!apiKey) {
+        alert('Add your Collector Advisor API key in Settings first.');
+        openSettingsModal();
+        return;
+      }
+      const btn = document.getElementById('advisor-send-btn');
+      const box = document.getElementById('advisor-chat');
+      appendAdvisorBubble('user', text);
+      input.value = '';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+      const thinking = document.createElement('div');
+      thinking.id = 'advisor-thinking';
+      thinking.className = 'advisor-thinking rounded-2xl p-3 text-[10px] text-slate-400 flex items-center gap-2';
+      thinking.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-violet-300"></i> Researching the release and your collection…';
+      box.appendChild(thinking); box.scrollTop = box.scrollHeight;
+
+      try {
+        const model = localStorage.getItem('filmvault_openai_model') || 'gpt-6-luna';
+        const useResearch = document.getElementById('advisor-research').checked;
+        const previous = advisorHistory.slice(-10).map(m => ({role:m.role, content:m.content}));
+        const payload = {
+          model,
+          store: false,
+          instructions: 'Be concise but substantive. Use headings and bullets. Do not pretend to know facts that are not supported. This is a collector decision-support tool, not a generic movie recommendation bot.',
+          input: [
+            ...previous,
+            { role: 'user', content: buildAdvisorPrompt(text) }
+          ],
+          max_output_tokens: 1400
         };
-
-      set(
-        'dash-total',
-        totalItems
-      );
-
-      set(
-        'dash-4k',
-        fourK
-      );
-
-      set(
-        'dash-boutique',
-        boutique
-      );
-
-      set(
-        'dash-missing',
-        missing
-      );
+        if (useResearch) payload.tools = [{type:'web_search'}];
+        const response = await fetch('https://api.openai.com/v1/responses', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+          body:JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error?.message || `API error ${response.status}`);
+        const answer = data.output_text || (Array.isArray(data.output) ? data.output.flatMap(x => x.content || []).filter(x => x.type === 'output_text').map(x => x.text).join('\n') : '');
+        if (!answer) throw new Error('The advisor returned no text.');
+        if (thinking) thinking.remove();
+        appendAdvisorBubble('assistant', answer);
+      } catch (err) {
+        if (thinking) thinking.remove();
+        appendAdvisorBubble('assistant', `I couldn't complete the advisor request. ${err.message}\n\nIf this is a browser/API error, verify the Advisor API key and model in Settings. For research mode, make sure your API account supports web search.`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+      }
     }
 
-    /*
-     * ---------------------------------------------------------
-     * SETTINGS
-     * ---------------------------------------------------------
-     */
-
-    function openSettingsModal() {
-      const input =
-        document.getElementById(
-          'tmdb-api-key-input'
-        );
-
-      input.value =
-        getTMDBApiKey();
-
-      document
-        .getElementById(
-          'settings-modal'
-        )
-        .classList.remove(
-          'hidden'
-        );
+    function openAdvisorForMovie(id) {
+      const movie = collection.find(m => String(m.id) === String(id));
+      switchTab('advisor');
+      const input = document.getElementById('advisor-input');
+      if (!movie) return;
+      const release = `${movie.title}${movie.format ? ` — ${movie.format}` : ''}${movie.label || movie.publisher ? ` — ${movie.label || movie.publisher}` : ''}${movie.packaging && movie.packaging !== 'Standard Case' ? ` — ${movie.packaging}` : ''}`;
+      input.value = `Evaluate this release in my collection context.\nRelease: ${release}\nPrice: $`;
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
     }
-
-    function closeSettingsModal() {
-      document
-        .getElementById(
-          'settings-modal'
-        )
-        .classList.add(
-          'hidden'
-        );
-    }
-
-    function saveSettings() {
-      localStorage.setItem(
-        'tmdb_api_key',
-        document
-          .getElementById(
-            'tmdb-api-key-input'
-          )
-          .value
-          .trim()
-      );
-
-      closeSettingsModal();
-
-      showToast(
-        'Settings saved.',
-        1800
-      );
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * CLEAR COLLECTION
-     * ---------------------------------------------------------
-     */
 
     function openClearModal() {
-      document
-        .getElementById(
-          'clear-modal'
-        )
-        .classList.remove(
-          'hidden'
-        );
+      document.getElementById('clear-modal').classList.remove('hidden');
     }
 
     function closeClearModal() {
-      document
-        .getElementById(
-          'clear-modal'
-        )
-        .classList.add(
-          'hidden'
-        );
+      document.getElementById('clear-modal').classList.add('hidden');
     }
 
     function confirmClearCollection() {
       collection = [];
-
       saveCollection();
       renderCatalog();
-
       closeClearModal();
     }
 
-    /*
-     * ---------------------------------------------------------
-     * FILTERS
-     * ---------------------------------------------------------
-     */
-
-    function setFormatFilter(format) {
-      currentFormatFilter =
-        format;
-
-      document
-        .querySelectorAll(
-          '.filter-fmt-btn'
-        )
-        .forEach(button => {
-          button.classList.remove(
-            'bg-amber-500',
-            'text-slate-950'
-          );
-
-          button.classList.add(
-            'bg-slate-800/80',
-            'text-slate-300'
-          );
-        });
-
-      const selected =
-        document.getElementById(
-          `filter-fmt-${format}`
-        );
-
-      if (selected) {
-        selected.classList.add(
-          'bg-amber-500',
-          'text-slate-950'
-        );
-
-        selected.classList.remove(
-          'bg-slate-800/80',
-          'text-slate-300'
-        );
-      }
-
+    function setFormatFilter(fmt) {
+      currentFormatFilter = fmt;
+      document.querySelectorAll('.filter-fmt-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('bg-slate-800/80', 'text-slate-300');
+      });
+      document.getElementById(`filter-fmt-${fmt}`).classList.add('bg-amber-500', 'text-slate-950');
+      document.getElementById(`filter-fmt-${fmt}`).classList.remove('bg-slate-800/80', 'text-slate-300');
       renderCatalog();
     }
 
-    function filterCatalog() {
-      renderCatalog();
+    function filterCatalog() { renderCatalog(); }
+    function openSettingsModal() { document.getElementById('settings-modal').classList.remove('hidden'); }
+    function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+    function saveSettings() {
+      localStorage.setItem('tmdb_api_key', document.getElementById('tmdb-api-key-input').value.trim());
+      localStorage.setItem('filmvault_openai_api_key', document.getElementById('openai-api-key-input').value.trim());
+      localStorage.setItem('filmvault_openai_model', document.getElementById('openai-model-input').value.trim() || 'gpt-6-luna');
+      closeSettingsModal();
+      showToast('Settings saved.');
+      setTimeout(hideToast, 1200);
     }
 
-    /*
-     * ---------------------------------------------------------
-     * JSON IMPORT / EXPORT
-     * ---------------------------------------------------------
-     */
-
-    function exportCollection() {
-      const blob =
-        new Blob(
-          [
-            JSON.stringify(
-              collection,
-              null,
-              2
-            )
-          ],
-          {
-            type:
-              'application/json'
-          }
-        );
-
-      const url =
-        URL.createObjectURL(
-          blob
-        );
-
-      const link =
-        document.createElement(
-          'a'
-        );
-
-      link.href = url;
-      link.download =
-        'filmvault_collection.json';
-
-      document.body.appendChild(
-        link
-      );
-
-      link.click();
-      link.remove();
-
-      URL.revokeObjectURL(
-        url
-      );
-    }
-
-    function importCollection(event) {
-      const file =
-        event.target.files?.[0];
-
-      if (!file) return;
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        () => {
-          try {
-            const imported =
-              JSON.parse(
-                reader.result
-              );
-
-            if (!Array.isArray(imported)) {
-              throw new Error(
-                'Invalid collection format.'
-              );
-            }
-
-            collection =
-              imported;
-
-            saveCollection();
-            renderCatalog();
-
-            alert(
-              `Imported ${collection.length} items.`
-            );
-          } catch (err) {
-            alert(
-              `Import failed: ${err.message}`
-            );
-          }
-        };
-
-      reader.readAsText(file);
-
-      event.target.value = '';
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * CSV IMPORT
-     * ---------------------------------------------------------
-     */
-
-    function parseCSVLine(line) {
-      const values = [];
-      let current = '';
-      let insideQuotes = false;
-
-      for (
-        let i = 0;
-        i < line.length;
-        i++
-      ) {
-        const char =
-          line[i];
-
-        if (char === '"') {
-          if (
-            insideQuotes &&
-            line[i + 1] === '"'
-          ) {
-            current += '"';
-            i++;
-          } else {
-            insideQuotes =
-              !insideQuotes;
-          }
-        } else if (
-          char === ',' &&
-          !insideQuotes
-        ) {
-          values.push(
-            current
-          );
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-
-      values.push(current);
-
-      return values;
-    }
-
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let field = '';
-      let inQuotes = false;
-
-      for (
-        let i = 0;
-        i < text.length;
-        i++
-      ) {
-        const char =
-          text[i];
-
-        if (char === '"') {
-          if (
-            inQuotes &&
-            text[i + 1] === '"'
-          ) {
-            field += '"';
-            i++;
-          } else {
-            inQuotes =
-              !inQuotes;
-          }
-        } else if (
-          char === ',' &&
-          !inQuotes
-        ) {
-          row.push(field);
-          field = '';
-        } else if (
-          (char === '\n' ||
-            char === '\r') &&
-          !inQuotes
-        ) {
-          if (
-            char === '\r' &&
-            text[i + 1] === '\n'
-          ) {
-            i++;
-          }
-
-          row.push(field);
-          field = '';
-
-          if (
-            row.some(
-              value =>
-                String(
-                  value
-                ).trim() !== ''
-            )
-          ) {
-            rows.push(row);
-          }
-
-          row = [];
-        } else {
-          field += char;
-        }
-      }
-
-      row.push(field);
-
-      if (
-        row.some(
-          value =>
-            String(
-              value
-            ).trim() !== ''
-        )
-      ) {
-        rows.push(row);
-      }
-
-      return rows;
-    }
-
-    function importCSVText(text) {
-      const rows =
-        parseCSV(text);
-
-      if (rows.length < 2) {
-        throw new Error(
-          'CSV contains no data rows.'
-        );
-      }
-
-      const headers =
-        rows[0].map(
-          h =>
-            String(h)
-              .trim()
-              .toLowerCase()
-        );
-
-      const getIndex =
-        (...names) => {
-          for (const name of names) {
-            const index =
-              headers.indexOf(
-                name
-              );
-
-            if (index !== -1) {
-              return index;
-            }
-          }
-
-          return -1;
-        };
-
-      const titleIndex =
-        getIndex(
-          'title',
-          'name'
-        );
-
-      if (titleIndex === -1) {
-        throw new Error(
-          'CSV does not contain a title column.'
-        );
-      }
-
-      const formatIndex =
-        getIndex(
-          'format',
-          'media format'
-        );
-
-      const publisherIndex =
-        getIndex(
-          'publisher',
-          'label',
-          'studio'
-        );
-
-      const directorIndex =
-        getIndex(
-          'director',
-          'directors'
-        );
-
-      const eanIndex =
-        getIndex(
-          'ean_isbn13',
-          'ean',
-          'isbn13'
-        );
-
-      const upcIndex =
-        getIndex(
-          'upc_isbn10',
-          'upc',
-          'isbn10'
-        );
-
-      const lengthIndex =
-        getIndex(
-          'length',
-          'runtime'
-        );
-
-      const discsIndex =
-        getIndex(
-          'number_of_discs',
-          'discs'
-        );
-
-      const copiesIndex =
-        getIndex(
-          'copies'
-        );
-
-      const dateIndex =
-        getIndex(
-          'added',
-          'date purchased',
-          'date'
-        );
-
-      const imported =
-        rows.slice(1)
-          .map((row, index) => {
-            const get =
-              columnIndex =>
-                columnIndex >= 0
-                  ? String(
-                      row[
-                        columnIndex
-                      ] || ''
-                    ).trim()
-                  : '';
-
-            const rawTitle =
-              get(titleIndex);
-
-            const title =
-              cleanTitle(
-                rawTitle
-              );
-
-            if (!title) {
-              return null;
-            }
-
-            const publisher =
-              get(
-                publisherIndex
-              );
-
-            const explicitFormat =
-              get(
-                formatIndex
-              );
-
-            return {
-              id:
-                get(
-                  getIndex('id')
-                ) ||
-                `m_import_${Date.now()}_${index}`,
-
-              title,
-
-              format:
-                explicitFormat ||
-                detectFormat(
-                  rawTitle,
-                  publisher
-                ),
-
-              packaging:
-                detectPackaging(
-                  rawTitle
-                ),
-
-              director:
-                get(
-                  directorIndex
-                ),
-
-              studio:
-                publisher,
-
-              length:
-                get(
-                  lengthIndex
-                ),
-
-              numberOfDiscs:
-                parseInt(
-                  get(
-                    discsIndex
-                  )
-                ) || 1,
-
-              copies:
-                parseInt(
-                  get(
-                    copiesIndex
-                  )
-                ) || 1,
-
-              datePurchased:
-                get(
-                  dateIndex
-                ),
-
-              upc:
-                normalizeBarcode(
-                  get(
-                    upcIndex
-                  )
-                ),
-
-              upcCode:
-                normalizeBarcode(
-                  get(
-                    upcIndex
-                  )
-                ),
-
-              ean:
-                normalizeBarcode(
-                  get(
-                    eanIndex
-                  )
-                ),
-
-              poster: '',
-              overview: '',
-              backdrop: '',
-              trailer: '',
-              rating: '',
-              releaseDate: '',
-              tmdbId: '',
-              enrichmentCheckedAt: '',
-              enrichmentTitleKey: ''
-            };
-          })
-          .filter(Boolean);
-
-      collection =
-        imported;
-
-      saveCollection();
-      renderCatalog();
-
-      return imported.length;
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * APP INITIALIZATION
-     * ---------------------------------------------------------
-     */
-
-    function initApp() {
-      loadCollection();
-      loadUPCCache();
-      loadTMDBCache();
-
-      const apiKey =
-        getTMDBApiKey();
-
-      const apiInput =
-        document.getElementById(
-          'tmdb-api-key-input'
-        );
-
-      if (apiInput) {
-        apiInput.value =
-          apiKey;
-      }
-
-      renderCatalog();
-      updateStats();
-    }
-
-    window.onload =
-      initApp;
+    window.onload = initApp;
   </script>
 </body>
 </html>
