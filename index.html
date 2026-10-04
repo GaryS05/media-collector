@@ -1796,10 +1796,17 @@ ${userText}`;
           temperature: 0.25,
           max_tokens: 1400
         };
-        // OpenRouter's server-side web search works with its OpenAI-compatible
-        // Chat Completions API. It is intentionally opt-in because web search
-        // can have separate provider/tool charges even when the model is free.
-        if (useResearch) payload.tools = [{ type: 'openrouter:web_search' }];
+        // Use OpenRouter's web-search plugin in Research mode. The plugin injects
+        // search results into the model request instead of asking the client to
+        // execute tool calls. This is more reliable with openrouter/free because
+        // some free models may otherwise emit raw tool-call markup as plain text.
+        if (useResearch) {
+          payload.plugins = [{
+            id: 'web',
+            max_results: 5,
+            search_prompt: 'Research the exact physical-media release, transfer quality, edition differences, and current asking/market prices. Prefer publisher/distributor pages, Blu-ray.com, DVDBeaver, Caps-a-holic, Home Theater Forum, reputable retailers and review sources. Do not invent facts; distinguish current price evidence from historical MSRP.'
+          }];
+        }
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method:'POST',
           headers:{
@@ -1812,13 +1819,36 @@ ${userText}`;
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data?.error?.message || `OpenRouter API error ${response.status}`);
-        const answer = data?.choices?.[0]?.message?.content || '';
+        let answer = data?.choices?.[0]?.message?.content || '';
+        // Some models can still expose internal tool syntax as text. Never show
+        // that raw protocol markup to the collector; retry once without Research.
+        const looksLikeRawToolCall = /<\|tool_call_(?:start|end)\|>|\b(?:google|web_search)\s*\(/i.test(answer);
+        if (looksLikeRawToolCall && useResearch) {
+          const retryPayload = { ...payload };
+          delete retryPayload.plugins;
+          retryPayload.messages = [
+            ...messages,
+            { role:'system', content:'Do not emit tool calls, XML tool syntax, or internal protocol markup. Answer the collector directly using only the information available in the conversation. Clearly mark any release or price facts that you cannot verify.' }
+          ];
+          const retryResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${apiKey}`,
+              'HTTP-Referer': window.location.href,
+              'X-Title': 'FilmVault Collector Advisor'
+            },
+            body:JSON.stringify(retryPayload)
+          });
+          const retryData = await retryResponse.json();
+          if (retryResponse.ok) answer = retryData?.choices?.[0]?.message?.content || '';
+        }
         if (!answer) throw new Error('The advisor returned no text.');
         if (thinking) thinking.remove();
         appendAdvisorBubble('assistant', answer);
       } catch (err) {
         if (thinking) thinking.remove();
-        appendAdvisorBubble('assistant', `I couldn't complete the advisor request. ${err.message}\n\nIf this is a browser/API error, verify your OpenRouter API key and model in Settings. If Research is enabled, make sure the selected model supports tools.`);
+        appendAdvisorBubble('assistant', `I couldn't complete the advisor request. ${err.message}\n\nIf this is a browser/API error, verify your OpenRouter API key and model in Settings. If Research is enabled, verify the OpenRouter key and try again; FilmVault will fall back to a normal answer if a model exposes internal tool syntax.`);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
